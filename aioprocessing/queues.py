@@ -22,10 +22,22 @@ class _AioQueueMixin(_AioExecutorMixin):
                                     #(self.__class__.__name__, name))
 
 class AioSimpleQueue(SimpleQueue, _AioQueueMixin):
+    """ An asyncio-friendly version of mp.SimpleQueue. 
+    
+    Provides two asyncio.coroutines: coro_get and coro_put,
+    which are asynchronous version of get and put, respectively.
+    
+    """
     pass
 
 
 class AioQueue(Queue, _AioQueueMixin):
+    """ An asyncio-friendly version of mp.SimpleQueue. 
+    
+    Provides two asyncio.coroutines: coro_get and coro_put,
+    which are asynchronous version of get and put, respectively.
+    
+    """
     def __init__(self, maxsize=0, *, ctx):
         super().__init__(maxsize, ctx=ctx)
         self._cancelled_join = False
@@ -40,6 +52,13 @@ class AioQueue(Queue, _AioQueueMixin):
             self._executor.shutdown()
 
 class AioJoinableQueue(JoinableQueue, _AioQueueMixin):
+    """ An asyncio-friendly version of mp.JoinableQueue. 
+    
+    Provides three asyncio.coroutines: coro_get, coro_put, and
+    coro_join, which are asynchronous version of get put, and
+    join, respectively.
+    
+    """
     @asyncio.coroutine
     def coro_join(self):
         return (yield from self.execute(self.join))

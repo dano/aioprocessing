@@ -12,6 +12,12 @@ AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
     ))
      
 class AioQueueProxy(queues._AioQueueMixin, AioBaseQueueProxy):
+    """ A Proxy object for AioQueue.
+    
+    Provides coroutines for calling 'get' and 'put' on the
+    proxy.
+    
+    """
     @asyncio.coroutine
     def coro_get(self):
         return (yield from self.execute(self._callmethod, 'get'))
@@ -22,11 +28,13 @@ class AioQueueProxy(queues._AioQueueMixin, AioBaseQueueProxy):
 
 
 class AioManager(SyncManager):
+    """ A mp.Manager that provides asyncio-friendly objects. """"
     pass
 AioManager.register("AioQueue", Queue, AioQueueProxy)
 
 
 def Manager():
+    """ Starts and returns an asyncio-friendly mp.SyncManager. """
     m = AioManager()
     m.start()
     return m

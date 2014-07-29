@@ -5,6 +5,15 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 class _AioExecutorMixin():
+    """ A Mixin that provides asynchronous functionality.
+    
+    This mixin provides methods that allow a class to run
+    blocking methods via asyncio in a ThreadPoolExecutor.
+    It also provides methods that attempt to keep the object
+    picklable despite having a non-picklable ThreadPoolExecutor
+    as part of its state.
+    
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._executor = self._get_executor()
@@ -30,5 +39,4 @@ class _AioExecutorMixin():
         if '_executor' not in state:
             super().__setstate__(state)
         self.__dict__['_executor'] = self._get_executor()
-
 
