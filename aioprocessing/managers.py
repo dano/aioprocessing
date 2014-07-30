@@ -11,7 +11,7 @@ AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
     'get_nowait', 'empty', 'join', '_qsize', 'full'
     ))
      
-class AioQueueProxy(queues._AioQueueMixin, AioBaseQueueProxy):
+class AioQueueProxy(queues.AioBaseQueue, AioBaseQueueProxy):
     """ A Proxy object for AioQueue.
     
     Provides coroutines for calling 'get' and 'put' on the
@@ -28,7 +28,7 @@ class AioQueueProxy(queues._AioQueueMixin, AioBaseQueueProxy):
 
 
 class AioManager(SyncManager):
-    """ A mp.Manager that provides asyncio-friendly objects. """"
+    """ A mp.Manager that provides asyncio-friendly objects. """
     pass
 AioManager.register("AioQueue", Queue, AioQueueProxy)
 

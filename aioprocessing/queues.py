@@ -4,7 +4,8 @@ from multiprocessing.queues import Queue, SimpleQueue, JoinableQueue
 
 from .executor import _AioExecutorMixin
 
-class _AioQueueMixin(_AioExecutorMixin):
+
+class AioBaseQueue(_AioExecutorMixin):
     @asyncio.coroutine
     def coro_put(self, item):
         return (yield from self.execute(self.put, item))
@@ -21,17 +22,19 @@ class _AioQueueMixin(_AioExecutorMixin):
             #raise AttributeError("'%s' object has no attribute '%s'" % 
                                     #(self.__class__.__name__, name))
 
-class AioSimpleQueue(SimpleQueue, _AioQueueMixin):
+
+class AioSimpleQueue(AioBaseQueue, SimpleQueue):
     """ An asyncio-friendly version of mp.SimpleQueue. 
     
     Provides two asyncio.coroutines: coro_get and coro_put,
     which are asynchronous version of get and put, respectively.
     
     """
-    pass
+    def __init__(self, *, ctx):
+        super().__init__(ctx=ctx)
 
 
-class AioQueue(Queue, _AioQueueMixin):
+class AioQueue(AioBaseQueue, Queue):
     """ An asyncio-friendly version of mp.SimpleQueue. 
     
     Provides two asyncio.coroutines: coro_get and coro_put,
@@ -51,7 +54,8 @@ class AioQueue(Queue, _AioQueueMixin):
         if self._executor and not self._cancelled_join:
             self._executor.shutdown()
 
-class AioJoinableQueue(JoinableQueue, _AioQueueMixin):
+
+class AioJoinableQueue(AioBaseQueue, JoinableQueue):
     """ An asyncio-friendly version of mp.JoinableQueue. 
     
     Provides three asyncio.coroutines: coro_get, coro_put, and

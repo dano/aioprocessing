@@ -27,7 +27,7 @@ class _AioExecutorMixin():
         return ThreadPoolExecutor(max_workers=cpu_count())
 
     def __getstate__(self):
-        state = super().__getstate__()
+        state = super().__getstate__() if hasattr(super(), "__getstate__") else None
         if not state:
             self_dict = self.__dict__
             self_dict['_executor'] = None
@@ -35,8 +35,9 @@ class _AioExecutorMixin():
         return state
 
     def __setstate__(self, state):
-        print("__setstate__ being called")
         if '_executor' not in state:
             super().__setstate__(state)
+        else:
+            self.__dict__.update(state)
         self.__dict__['_executor'] = self._get_executor()
 
