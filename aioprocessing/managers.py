@@ -1,8 +1,13 @@
 import asyncio
 from queue import Queue
-from multiprocessing.managers import SyncManager, BaseProxy, MakeProxyType
+from threading import (Barrier, BoundedSemaphore, Condition, Event,
+                       Lock, RLock, Semaphore)
+from multiprocessing.managers import (SyncManager, BaseProxy, MakeProxyType,
+                                      BarrierProxy, EventProxy, ConditionProxy,
+                                      AcquirerProxy)
 
 from . import queues
+from .executor import _AioExecutorMixin
 
 __all__ = ['Manager']
 
@@ -10,8 +15,13 @@ AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
     'task_done', 'get', 'qsize', 'put', 'put_nowait', 
     'get_nowait', 'empty', 'join', '_qsize', 'full'
     ))
-     
-class AioQueueProxy(queues.AioBaseQueue, AioBaseQueueProxy):
+
+class _AioProxyMixin(_AioExecutorMixin):
+    @asyncio.coroutine
+    def _async_call(method, args=()):
+        return (yield from self.execute(self._callmethod, method, args))
+
+class AioQueueProxy(_AioProxyMixin, AioBaseQueueProxy):
     """ A Proxy object for AioQueue.
     
     Provides coroutines for calling 'get' and 'put' on the
@@ -20,17 +30,42 @@ class AioQueueProxy(queues.AioBaseQueue, AioBaseQueueProxy):
     """
     @asyncio.coroutine
     def coro_get(self):
-        return (yield from self.execute(self._callmethod, 'get'))
+        return (yield from self._async_call('get'))
 
     @asyncio.coroutine
     def coro_put(self, item):
-        return (yield from self.execute(self._callmethod, 'put', (item,)))
+        return (yield from self._async_call('put', (item,)))
+
+
+class AioAcquirerProxy(_AioExecutorMixin, AcquirerProxy):
+    @asyncio.coroutine
+    def acquire(self, blocking=True, timeout=None):
+        return (yield from self._async_call('acquire', (timeout,)))
+
+
+class AioBarrierProxy(_AioExecutorMixin, BarrierProxy):
+    @asyncio.coroutine
+    def coro_wait(self, timeout=None):
+        return (yield from self._async_call('wait', (timeout,)))
+
+
+class AioEventProxy(_AioExecutorMixin, EventProxy):
+    @asyncio.coroutine
+    def coro_wait(self, timeout=None):
+        return (yield from self._async_call('wait', (timeout,)))
 
 
 class AioManager(SyncManager):
     """ A mp.Manager that provides asyncio-friendly objects. """
     pass
 AioManager.register("AioQueue", Queue, AioQueueProxy)
+#AioManager.register("AioBarrier", Barrier, AioQueueProxy)
+#AioManager.register("AioBoundedSemaphore", BoundedSemaphore, AioQueueProxy)
+#AioManager.register("AioCondition", Condition, AioQueueProxy)
+#AioManager.register("AioEvent", Event, AioQueueProxy)
+#AioManager.register("AioLock", Lock, AioQueueProxy)
+#AioManager.register("AioRLock", RLock, AioQueueProxy)
+#AioManager.register("AioSemaphore", Semaphore, AioQueueProxy)
 
 
 def Manager():

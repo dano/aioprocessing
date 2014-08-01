@@ -2,6 +2,7 @@ import multiprocessing
 
 from . import queues
 from .managers import *
+#from .locks import *
 
 
 def get_context(method=None):

@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 """ Run aioprocessing unit tests.
 
 Usage:
