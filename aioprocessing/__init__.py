@@ -46,49 +46,49 @@ def AioSimpleQueue(context=None):
 
 # locks
 
-def AioLock(self, context=None):
+def AioLock(context=None):
     '''Returns a non-recursive lock object'''
     if not context:
         context = get_context()
-    from .synchronize import AioLock
-    return AioLock(ctx=self.get_context())
+    from .locks import AioLock
+    return AioLock(ctx=get_context())
 
-def AioRLock(self, context=None):
+def AioRLock(context=None):
     '''Returns a recursive lock object'''
     if not context:
         context = get_context()
     from .locks import RLock
-    return RLock(ctx=self.get_context())
+    return RLock(ctx=get_context())
 
-def AioCondition(self, lock=None, context=None):
+def AioCondition(lock=None, context=None):
     '''Returns a condition object'''
     if not context:
         context = get_context()
     from .locks import AioCondition
-    return AioCondition(lock, ctx=self.get_context())
+    return AioCondition(lock, ctx=get_context())
 
-def AioSemaphore(self, value=1, context=None):
+def AioSemaphore(value=1, context=None):
     '''Returns a semaphore object'''
     if not context:
         context = get_context()
     from .locks import AioSemaphore
-    return AioSemaphore(value, ctx=self.get_context())
+    return AioSemaphore(value, ctx=get_context())
 
-def AioBoundedSemaphore(self, value=1, context=None):
+def AioBoundedSemaphore(value=1, context=None):
     '''Returns a bounded semaphore object'''
     if not context:
         context = get_context()
     from .locks import BoundedSemaphore
-    return BoundedSemaphore(value, ctx=self.get_context())
+    return BoundedSemaphore(value, ctx=get_context())
 
-def AioEvent(self, context=None):
+def AioEvent(context=None):
     '''Returns an event object'''
     if not context:
         context = get_context()
     from .locks import AioEvent
-    return AioEvent(ctx=self.get_context())
+    return AioEvent(ctx=get_context())
 
-def AioBarrier(self, parties, action=None, timeout=None, context=None):
+def AioBarrier(parties, action=None, timeout=None, context=None):
     '''Returns a barrier object'''
     if not context:
         context = get_context()

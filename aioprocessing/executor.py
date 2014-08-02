@@ -20,14 +20,28 @@ class _AioExecutorMixin():
 
     @property
     def execute(self):
+        return partial(self.run_in_executor, self._executor)
+
+    def run_in_executor(self, executor, callback, *args, **kwargs):
+        """ Wraps run_in_executor so we can support kwargs. 
+        
+        BaseEventLoop.run_in_executor does not support kwargs, so
+        we wrap our callback in a lambda if kwargs are provided.
+        
+        """
         loop = asyncio.get_event_loop()
-        return partial(loop.run_in_executor, self._executor)
+        if kwargs:
+            return loop.run_in_executor(executor,
+                                        lambda: callback(*args, **kwargs))
+        else:
+            return loop.run_in_executor(executor, callback, *args)
 
     def _get_executor(self):
         return ThreadPoolExecutor(max_workers=cpu_count())
 
     def __getstate__(self):
-        state = super().__getstate__() if hasattr(super(), "__getstate__") else None
+        state = (super().__getstate__()
+                     if hasattr(super(), "__getstate__") else None)
         if not state:
             self_dict = self.__dict__
             self_dict['_executor'] = None
