@@ -21,6 +21,7 @@ class _AioProxyMixin(_AioExecutorMixin):
     def _async_call(method, args=()):
         return (yield from self.execute(self._callmethod, method, args))
 
+
 class AioQueueProxy(_AioProxyMixin, AioBaseQueueProxy):
     """ A Proxy object for AioQueue.
     
@@ -37,35 +38,45 @@ class AioQueueProxy(_AioProxyMixin, AioBaseQueueProxy):
         return (yield from self._async_call('put', (item,)))
 
 
-class AioAcquirerProxy(_AioExecutorMixin, AcquirerProxy):
+class AioAcquirerProxy(_AioProxyMixin, AcquirerProxy):
     @asyncio.coroutine
-    def acquire(self, blocking=True, timeout=None):
+    def coro_acquire(self, blocking=True, timeout=None):
         return (yield from self._async_call('acquire', (timeout,)))
 
 
-class AioBarrierProxy(_AioExecutorMixin, BarrierProxy):
+class AioBarrierProxy(_AioProxyMixin, BarrierProxy):
     @asyncio.coroutine
     def coro_wait(self, timeout=None):
         return (yield from self._async_call('wait', (timeout,)))
 
 
-class AioEventProxy(_AioExecutorMixin, EventProxy):
+class AioEventProxy(_AioProxyMixin, EventProxy):
     @asyncio.coroutine
     def coro_wait(self, timeout=None):
         return (yield from self._async_call('wait', (timeout,)))
+
+
+class AioConditionProxy(_AioProxyMixin, ConditionProxy):
+    @asyncio.coroutine
+    def coro_wait(self, timeout=None):
+        return (yield from self._async_call('wait', (timeout,)))
+
+    @asyncio.coroutine
+    def coro_wait_for(self, predicate, timeout=None):
+        return (yield from self._async_call('wait_for', (predicate, timeout)))
 
 
 class AioManager(SyncManager):
     """ A mp.Manager that provides asyncio-friendly objects. """
     pass
 AioManager.register("AioQueue", Queue, AioQueueProxy)
-#AioManager.register("AioBarrier", Barrier, AioQueueProxy)
-#AioManager.register("AioBoundedSemaphore", BoundedSemaphore, AioQueueProxy)
-#AioManager.register("AioCondition", Condition, AioQueueProxy)
-#AioManager.register("AioEvent", Event, AioQueueProxy)
-#AioManager.register("AioLock", Lock, AioQueueProxy)
-#AioManager.register("AioRLock", RLock, AioQueueProxy)
-#AioManager.register("AioSemaphore", Semaphore, AioQueueProxy)
+AioManager.register("AioBarrier", Barrier, AioQueueProxy)
+AioManager.register("AioBoundedSemaphore", BoundedSemaphore, AioAcquirerProxy)
+AioManager.register("AioCondition", Condition, AioConditionProxy)
+AioManager.register("AioEvent", Event, AioQueueProxy)
+AioManager.register("AioLock", Lock, AioAcquirerProxy)
+AioManager.register("AioRLock", RLock, AioAcquirerProxy)
+AioManager.register("AioSemaphore", Semaphore, AioAcquirerProxy)
 
 
 def Manager():
