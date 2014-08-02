@@ -57,8 +57,8 @@ def AioRLock(context=None):
     '''Returns a recursive lock object'''
     if not context:
         context = get_context()
-    from .locks import RLock
-    return RLock(ctx=get_context())
+    from .locks import AioRLock
+    return AioRLock(ctx=get_context())
 
 def AioCondition(lock=None, context=None):
     '''Returns a condition object'''
@@ -78,8 +78,8 @@ def AioBoundedSemaphore(value=1, context=None):
     '''Returns a bounded semaphore object'''
     if not context:
         context = get_context()
-    from .locks import BoundedSemaphore
-    return BoundedSemaphore(value, ctx=get_context())
+    from .locks import AioBoundedSemaphore
+    return AioBoundedSemaphore(value, ctx=get_context())
 
 def AioEvent(context=None):
     '''Returns an event object'''

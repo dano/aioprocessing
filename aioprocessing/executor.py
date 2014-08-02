@@ -23,7 +23,7 @@ class _AioExecutorMixin():
         return partial(self.run_in_executor, self._executor)
 
     def run_in_executor(self, executor, callback, *args, **kwargs):
-        """ Wraps run_in_executor so we can support kwargs. 
+        """ Wraps run_in_executor so we can support kwargs.
         
         BaseEventLoop.run_in_executor does not support kwargs, so
         we wrap our callback in a lambda if kwargs are provided.
