@@ -18,7 +18,7 @@ AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
 
 class _AioProxyMixin(_AioExecutorMixin):
     @asyncio.coroutine
-    def _async_call(method, args=()):
+    def _async_call(self, method, args=()):
         return (yield from self.execute(self._callmethod, method, args))
 
 

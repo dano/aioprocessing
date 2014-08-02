@@ -10,7 +10,7 @@ class AioBaseQueue(_AioExecutorMixin):
     def coro_put(self, item):
         return (yield from self.execute(self.put, item))
 
-    @asyncio.coroutine    
+    @asyncio.coroutine 
     def coro_get(self):
         return (yield from self.execute(self.get))
 
