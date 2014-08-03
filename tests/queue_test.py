@@ -74,13 +74,19 @@ class ManagerQueueTest(BaseTest):
         q = m.AioQueue()
         p = ProcessPoolExecutor(max_workers=1)
         val = 4
-        yield p.submit(queue_put, q, val)
+        def submit():
+            yield p.submit(queue_put, q, val)
+        next(submit())
 
         @asyncio.coroutine
         def queue_get():
             out = yield from q.coro_get()
             self.assertEqual(out, val)
+            yield from q.coro_put(5)
+
         self.loop.run_until_complete(queue_get())
+        returned = q.get()
+        self.assertEqual(returned, 5)
         p.shutdown()
 
 

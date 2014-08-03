@@ -4,6 +4,23 @@ from multiprocessing import cpu_count
 from concurrent.futures import ThreadPoolExecutor
 
 
+class CoroBuilder(type):
+    def __new__(cls, clsname, bases, dct):
+        coro_list = dct.get('coroutines', [])
+        for b in bases:
+            coro_list.extend(b.__dict__.get('coroutines', []))
+        for func in coro_list:
+            dct['coro_{}'.format(func)] = cls.coro_maker(func)
+
+        return super().__new__(cls, clsname, bases, dct)
+
+    @staticmethod
+    def coro_maker(func):
+        def coro_func(self, *args, **kwargs):
+            return (yield from self.execute(getattr(self, func), *args, **kwargs))
+        return coro_func
+
+
 class _AioExecutorMixin():
     """ A Mixin that provides asynchronous functionality.
     
