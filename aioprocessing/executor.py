@@ -4,23 +4,6 @@ from multiprocessing import cpu_count
 from concurrent.futures import ThreadPoolExecutor
 
 
-class CoroBuilder(type):
-    def __new__(cls, clsname, bases, dct):
-        coro_list = dct.get('coroutines', [])
-        for b in bases:
-            coro_list.extend(b.__dict__.get('coroutines', []))
-        for func in coro_list:
-            dct['coro_{}'.format(func)] = cls.coro_maker(func)
-
-        return super().__new__(cls, clsname, bases, dct)
-
-    @staticmethod
-    def coro_maker(func):
-        def coro_func(self, *args, **kwargs):
-            return (yield from self.execute(getattr(self, func), *args, **kwargs))
-        return coro_func
-
-
 class _AioExecutorMixin():
     """ A Mixin that provides asynchronous functionality.
     
@@ -31,12 +14,10 @@ class _AioExecutorMixin():
     as part of its state.
     
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._executor = self._get_executor()
-
     @property
     def execute(self):
+        if not hasattr(self, '_executor'):
+            self._executor = self._get_executor()
         return partial(self.run_in_executor, self._executor)
 
     def run_in_executor(self, executor, callback, *args, **kwargs):
@@ -71,4 +52,23 @@ class _AioExecutorMixin():
         else:
             self.__dict__.update(state)
         self.__dict__['_executor'] = self._get_executor()
+
+
+class CoroBuilder(type):
+    def __new__(cls, clsname, bases, dct):
+        coro_list = dct.get('coroutines', [])
+        for b in bases:
+            coro_list.extend(b.__dict__.get('coroutines', []))
+        bases += (_AioExecutorMixin,)
+        for func in coro_list:
+            dct['coro_{}'.format(func)] = cls.coro_maker(func)
+
+        return super().__new__(cls, clsname, bases, dct)
+
+    @staticmethod
+    def coro_maker(func):
+        def coro_func(self, *args, **kwargs):
+            return (yield from self.execute(getattr(self, func), *args, **kwargs))
+        return coro_func
+
 

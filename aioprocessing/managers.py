@@ -17,12 +17,18 @@ AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
     ))
 
 
+class _AioProxyMixin(_AioExecutorMixin):
+    @asyncio.coroutine
+    def _async_call(self, method, args=()):
+        return (yield from self.execute(self._callmethod, method, args))
+
 class ProxyCoroBuilder(type):
     """ Build coroutines to proxy functions. """
     def __new__(cls, clsname, bases, dct):
         coro_list = dct.get('coroutines', [])
         for b in bases:
             coro_list.extend(b.__dict__.get('coroutines', []))
+        bases += (_AioProxyMixin,)
         for func in coro_list:
             dct['coro_{}'.format(func)] = cls.coro_maker(func)
 
@@ -34,14 +40,7 @@ class ProxyCoroBuilder(type):
             return (yield from self._async_call(func, args))
         return coro_func
 
-
-class _AioProxyMixin(_AioExecutorMixin):
-    @asyncio.coroutine
-    def _async_call(self, method, args=()):
-        return (yield from self.execute(self._callmethod, method, args))
-
-
-class AioQueueProxy(_AioProxyMixin, AioBaseQueueProxy, metaclass=ProxyCoroBuilder):
+class AioQueueProxy(AioBaseQueueProxy, metaclass=ProxyCoroBuilder):
     """ A Proxy object for AioQueue.
     
     Provides coroutines for calling 'get' and 'put' on the
@@ -51,19 +50,19 @@ class AioQueueProxy(_AioProxyMixin, AioBaseQueueProxy, metaclass=ProxyCoroBuilde
     coroutines = ['get', 'put']
 
 
-class AioAcquirerProxy(_AioProxyMixin, AcquirerProxy, metaclass=CoroBuilder):
+class AioAcquirerProxy(AcquirerProxy, metaclass=CoroBuilder):
     coroutines = ['acquire']
 
 
-class AioBarrierProxy(_AioProxyMixin, BarrierProxy, metaclass=CoroBuilder):
+class AioBarrierProxy(BarrierProxy, metaclass=CoroBuilder):
     coroutines = ['wait']
 
 
-class AioEventProxy(_AioProxyMixin, EventProxy, metaclass=CoroBuilder):
+class AioEventProxy(EventProxy, metaclass=CoroBuilder):
     coroutines = ['wait']
 
 
-class AioConditionProxy(_AioProxyMixin, ConditionProxy, metaclass=CoroBuilder):
+class AioConditionProxy(ConditionProxy, metaclass=CoroBuilder):
     coroutines = ['wait', 'wait_for']
 
 

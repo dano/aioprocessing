@@ -2,10 +2,10 @@ import asyncio
 import multiprocessing
 from multiprocessing.queues import Queue, SimpleQueue, JoinableQueue
 
-from .executor import _AioExecutorMixin, CoroBuilder
+from .executor import CoroBuilder
 
 
-class AioBaseQueue(_AioExecutorMixin, metaclass=CoroBuilder):
+class AioBaseQueue(metaclass=CoroBuilder):
     coroutines = ['get', 'put']
 
 
