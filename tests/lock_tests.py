@@ -155,18 +155,26 @@ class BarrierTest(BaseTest):
 def set_event(event):
     event.set()
 
-def EventTest(BaseTest):
+class EventTest(BaseTest):
     def setUp(self):
         super().setUp()
         self.event = aioprocessing.AioEvent()
 
     def test_event(self):
-        p = Process(target=set_event, args=(event,))
+        p = Process(target=set_event, args=(self.event,))
 
         @asyncio.coroutine
         def wait_event():
-            yield from event.wait()
+            yield from self.event.coro_wait()
 
         p.start()
-        loop.run_until_complete(wait_event())
+        self.loop.run_until_complete(wait_event())
+        p.join()
 
+class ConditionTest(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.cond = aioprocessing.AioCondition()
+
+    def test_cond(self):
+        pass
