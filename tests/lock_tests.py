@@ -102,3 +102,52 @@ class SemaphoreTest(BaseTest):
         self.assertReturnsIfImplemented(3, get_value, sem)
         self.assertEqual(sem.release(), None)
         self.assertReturnsIfImplemented(4, get_value, sem)
+
+class BoundedSemaphoreTest(SemaphoreTest):
+    def setUp(self):
+        super().setUp()
+        self.sem = aioprocessing.AioBoundedSemaphore(2)
+
+    def test_semaphore(self):
+        self._test_semaphore(self.sem)
+
+def barrier_wait(barrier, event):
+    event.set()
+    barrier.wait()
+
+class BarrierTest(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.barrier = aioprocessing.AioBarrier(2)
+
+    def _wait_barrier(self):
+        self.barrier.wait()
+
+    def test_barrier(self):
+        event = Event()
+        @asyncio.coroutine
+        def wait_barrier_async():
+            yield from self.barrier.coro_wait()
+
+        def wait_barrier():
+            fut = asyncio.async(wait_barrier_async())
+            yield from asyncio.sleep(.5)
+            self.assertEqual(self.barrier.n_waiting, 1)
+            self.barrier.wait()
+
+        #t = threading.Thread(target=self._wait_barrier)
+        #t.start()
+        self.loop.run_until_complete(wait_barrier())
+
+    def test_barrier_multiproc(self):
+        event = Event()
+        p = Process(target=barrier_wait, args=(self.barrier, event))
+        p.start()
+        @asyncio.coroutine
+        def wait_barrier():
+            event.wait()
+            yield from asyncio.sleep(.2)
+            self.assertEqual(self.barrier.n_waiting, 1)
+            yield from self.barrier.coro_wait()
+        self.loop.run_until_complete(wait_barrier())
+        p.join()

@@ -55,6 +55,16 @@ class _AioExecutorMixin():
 
 
 class CoroBuilder(type):
+    """ Metaclass for adding coroutines to a class.
+    
+    This metaclass has two main roles:
+    1) Make _AioExecutorMixin a parent of the given class
+    2) For every function name listed in the class attribute "coroutines",
+       add a new instance method to the class called "coro_<func_name>",
+       which is a asyncio.coroutine that calls func_name in a 
+       ThreadPoolExecutor.
+    
+    """
     def __new__(cls, clsname, bases, dct):
         coro_list = dct.get('coroutines', [])
         for b in bases:
