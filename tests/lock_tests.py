@@ -151,3 +151,22 @@ class BarrierTest(BaseTest):
             yield from self.barrier.coro_wait()
         self.loop.run_until_complete(wait_barrier())
         p.join()
+
+def set_event(event):
+    event.set()
+
+def EventTest(BaseTest):
+    def setUp(self):
+        super().setUp()
+        self.event = aioprocessing.AioEvent()
+
+    def test_event(self):
+        p = Process(target=set_event, args=(event,))
+
+        @asyncio.coroutine
+        def wait_event():
+            yield from event.wait()
+
+        p.start()
+        loop.run_until_complete(wait_event())
+
