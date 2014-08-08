@@ -14,28 +14,33 @@ class _AioExecutorMixin():
     as part of its state.
     
     """
-    @property
-    def execute(self):
-        if not hasattr(self, '_executor'):
-            self._executor = self._get_executor()
-        return partial(self.run_in_executor, self._executor)
+    pool_workers = None
 
-    def run_in_executor(self, executor, callback, *args, **kwargs):
+    def run_in_executor(self, callback, *args, **kwargs):
         """ Wraps run_in_executor so we can support kwargs.
         
         BaseEventLoop.run_in_executor does not support kwargs, so
         we wrap our callback in a lambda if kwargs are provided.
         
         """
+        if not hasattr(self, '_executor'):
+            self._executor = self._get_executor()
+
         loop = asyncio.get_event_loop()
         if kwargs:
-            return loop.run_in_executor(executor,
+            return loop.run_in_executor(self._executor,
                                         lambda: callback(*args, **kwargs))
         else:
-            return loop.run_in_executor(executor, callback, *args)
+            return loop.run_in_executor(self._executor, callback, *args)
+
+    def run_in_thread(self, callback, *args, **kwargs):
+        if not hasattr(self, '_executor'):
+            self._executor = self._get_executor()
+        fut = self._executor.submit(callback, *args, **kwargs)
+        return fut.result()
 
     def _get_executor(self):
-        return ThreadPoolExecutor(max_workers=cpu_count())
+        return ThreadPoolExecutor(max_workers=_AioExecutorMixin.pool_workers)
 
     def __getstate__(self):
         state = (super().__getstate__()
@@ -67,18 +72,35 @@ class CoroBuilder(type):
     """
     def __new__(cls, clsname, bases, dct):
         coro_list = dct.get('coroutines', [])
+        pool_workers = dct.get('pool_workers')
         for b in bases:
             coro_list.extend(b.__dict__.get('coroutines', []))
+            if not pool_workers:
+                pool_workers = b.__dict__.get('pool_workers')
+        if not pool_workers:
+            pool_workers = cpu_count()
+        _AioExecutorMixin.pool_workers = pool_workers
+
+        # Add _AioExecutorMixin to bases.
         bases += (_AioExecutorMixin,)
+
+        # Add coro/thread funcs to __dict__
         for func in coro_list:
             dct['coro_{}'.format(func)] = cls.coro_maker(func)
+            dct['thread_{}'.format(func)] = cls.thread_maker(func)
 
         return super().__new__(cls, clsname, bases, dct)
 
     @staticmethod
     def coro_maker(func):
         def coro_func(self, *args, **kwargs):
-            return (yield from self.execute(getattr(self, func), *args, **kwargs))
+            return (yield from self.run_in_executor(getattr(self, func), *args, **kwargs))
         return coro_func
+
+    @staticmethod
+    def thread_maker(func):
+        def thread_func(self, *args, **kwargs):
+            return self.run_in_thread(getattr(self, func), *args, **kwargs)
+        return thread_func
 
 

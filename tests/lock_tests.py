@@ -52,6 +52,28 @@ class LockTest(BaseTest):
 
         self.loop.run_until_complete(do_async_lock())
 
+    def test_lock_cm(self):
+        event = Event()
+        event2 = Event()
+        @asyncio.coroutine
+        def with_lock():
+            with (yield from self.lock):
+                event2.set()
+                asyncio.sleep(1)
+                event.wait()
+
+        def sync_lock(lock, event2):
+            event2.wait()
+            self.assertEqual(self.lock.acquire(False), False)
+            event.set()
+            self.lock.acquire()
+            self.lock.release()
+
+        p = Process(target=sync_lock, args=(self.lock, event2))
+        p.start()
+        self.loop.run_until_complete(with_lock())
+        p.join()
+
     def test_lock_multiproc(self):
         e = Event()
 
@@ -171,10 +193,30 @@ class EventTest(BaseTest):
         self.loop.run_until_complete(wait_event())
         p.join()
 
+def cond_notify(cond, event):
+    time.sleep(2)
+    event.set()
+    cond.acquire()
+    cond.notify_all()
+    cond.release()
+
 class ConditionTest(BaseTest):
     def setUp(self):
         super().setUp()
         self.cond = aioprocessing.AioCondition()
 
     def test_cond(self):
-        pass
+        event = Event()
+        def pred():
+            return event.is_set()
+
+        @asyncio.coroutine
+        def wait_for_pred():
+            yield from self.cond.coro_acquire()
+            yield from self.cond.coro_wait_for(pred)
+            yield from self.cond.coro_release()
+
+        p = Process(target=cond_notify, args=(self.cond, event))
+        p.start()
+        self.loop.run_until_complete(wait_for_pred())
+        p.join()
