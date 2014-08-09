@@ -3,6 +3,8 @@ from functools import partial
 from multiprocessing import cpu_count
 from concurrent.futures import ThreadPoolExecutor
 
+from . import util
+
 
 class _AioExecutorMixin():
     """ A Mixin that provides asynchronous functionality.
@@ -27,11 +29,7 @@ class _AioExecutorMixin():
             self._executor = self._get_executor()
 
         loop = asyncio.get_event_loop()
-        if kwargs:
-            return loop.run_in_executor(self._executor,
-                                        lambda: callback(*args, **kwargs))
-        else:
-            return loop.run_in_executor(self._executor, callback, *args)
+        return util.run_in_executor(self._executor, callback, *args, **kwargs)
 
     def run_in_thread(self, callback, *args, **kwargs):
         if not hasattr(self, '_executor'):
@@ -44,7 +42,7 @@ class _AioExecutorMixin():
 
     def __getstate__(self):
         state = (super().__getstate__()
-                     if hasattr(super(), "__getstate__") else None)
+                 if hasattr(super(), "__getstate__") else None)
         if not state:
             self_dict = self.__dict__
             self_dict['_executor'] = None
@@ -95,7 +93,7 @@ class CoroBuilder(type):
     @staticmethod
     def coro_maker(func):
         def coro_func(self, *args, **kwargs):
-            return (yield from self.run_in_executor(getattr(self, func), *args, **kwargs))
+            return self.run_in_executor(getattr(self, func), *args, **kwargs)
         return coro_func
 
     @staticmethod

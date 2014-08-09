@@ -1,58 +1,29 @@
 import multiprocessing
+from multiprocessing import get_context
 
 from .managers import *
-from . import executor
+from .connection import *
+from .util import retype_instance
+from .executor import CoroBuilder
+
+__all__ = ['AioProcess', 'AioPipe', 'AioQueue', 'AioJoinableQueue', 
+           'AioSimpleQueue', 'AioLock', 'AioRLock', 'AioCondition', 
+           'AioSemaphore', 'AioBoundedSemaphore', 'AioEvent', 'AioBarrier']
+__all__.extend(managers.__all__)
 
 
-def get_context(method=None):
-    return multiprocessing.get_context(method=method)
-
-class AioProcess(metaclass=executor.CoroBuilder):
+class AioProcess(metaclass=CoroBuilder):
     coroutines = ['join']
 
-def merge_instance(recvinst, sendtype, metaklass):
-    """ Turn recvinst into an instance of sendtype.
-    
-    Given an instance (recvinst) of some class, turn that instance 
-    into an instance of class `sendtype`, which inherits from 
-    type(recvinst). The output instance will still retain all
-    the instance methods and attributes it started with, however.
-
-    For example:
-
-    Input:
-    type(recvinst) == Connection
-    sendtype == AioConnection
-    metaklass == CoroBuilder (metaclass used for creating AioConnection)
-
-    Output:
-    recvinst.__class__ == AioConnection
-    recvinst.__bases__ == bases_of_AioConnection +
-                          Connection + bases_of_Connection
-    
-    
-    """
-    bases = (type(recvinst),) + type(recvinst).__bases__ + sendtype.__bases__
-    # We change __class__ on the instance by creatin
-    recvinst.__class__ = metaklass(sendtype.__name__, bases, {})
-    dct = sendtype.__dict__
-    for objname in dct:
-        if not objname.startswith('__'):
-            setattr(type(recvinst), objname, dct[objname])
-    return recvinst
 
 def AioPipe(duplex=True):
     from .connection import AioConnection
     conn1, conn2 = multiprocessing.Pipe(duplex=duplex)
-    # We want to turn whatever type of Connection object returned
-    # by multiprocessing into an instance of AioConnection.
-    # We do that by giving the instance new base classes, via
-    # reassigning __class__. We add the AioConnection base classes
-    # to the current instance.
-    conn1 = merge_instance(conn1, AioConnection, executor.CoroBuilder)
-    conn2 = merge_instance(conn2, AioConnection, executor.CoroBuilder)
+    # Transform the returned connection instances into
+    # instance of AioConnection.
+    conn1 = retype_instance(conn1, AioConnection, CoroBuilder)
+    conn2 = retype_instance(conn2, AioConnection, CoroBuilder)
     return conn1, conn2
-
 
 # queues
 
