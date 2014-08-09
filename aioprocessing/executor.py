@@ -82,7 +82,8 @@ class CoroBuilder(type):
         _AioExecutorMixin.pool_workers = pool_workers
 
         # Add _AioExecutorMixin to bases.
-        bases += (_AioExecutorMixin,)
+        if _AioExecutorMixin not in bases:
+            bases += (_AioExecutorMixin,)
 
         # Add coro/thread funcs to __dict__
         for func in coro_list:

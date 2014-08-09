@@ -3,7 +3,7 @@ aioprocessing
 
 A Python 3.4+ library that integrates the [multiprocessing](https://docs.python.org/3/library/multiprocessing.html) module with [asyncio](https://docs.python.org/3/library/asyncio.html).
 
-Aioprocessing provides non-blocking coroutine versions of many blocking instance methods on objects in the `multiprocessing` library. Here's an example showing non-blocking usage of `Event`, `Queue`, and `Lock`.
+Aioprocessing provides non-blocking coroutine versions of many blocking instance methods on objects in the `multiprocessing` library. Here's an example showing non-blocking usage of `Event`, `Queue`, and `Lock`:
 
 ```python
 import time
@@ -28,7 +28,6 @@ def func(queue, event, lock, items):
 
 @asyncio.coroutine
 def example(queue, event, lock):
-    print("starting")
     l = [1,2,3,4,5]
     p = multiprocessing.Process(target=func, args=(queue, event, lock, l))
     p.start()
@@ -58,3 +57,8 @@ if __name__ == "__main__":
     loop.run_until_complete(asyncio.wait(tasks))
     loop.close()
 ```
+
+Note
+----
+
+This project is currently in pre-alpha stages, and is likely quite buggy. Use at your own risk. (I do appreciate bug reports, though :).
