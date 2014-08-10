@@ -7,6 +7,7 @@ from  multiprocessing.synchronize import (Event, Lock, RLock, BoundedSemaphore,
 __all__ = ["AioLock", "AioRLock", "AioBarrier", "AioCondition", "AioEvent",
            "AioSemaphore", "AioBoundedSemaphore"]
 
+
 class _ContextManager:
     """Context manager.
 
@@ -37,10 +38,30 @@ class _ContextManager:
             self._lock = None  # Crudely prevent reuse.
 
 
-
 class AioBaseLock(metaclass=CoroBuilder):
     pool_workers = 1
     coroutines = ['acquire', 'release']
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._threaded_acquire = False
+
+    def coro_acquire(self, *args, **kwargs):
+        self._threaded_acquire = True
+        return self.run_in_executor(self.acquire, *args, **kwargs)
+
+    def release(self):
+        if self._threaded_acquire:
+            return self.run_in_thread(super().release)
+        return super().release()
+
+    def coro_release(self):
+        if not self._threaded_acquire:
+            raise RuntimeError("A lock acquired via acquire() "
+                               "must be released via release().")
+        else:
+            self._threaded_acquire = False
+            return self.run_in_executor(super().release, *args, **kwargs)
+
 
     def __iter__(self):
         yield from self.coro_acquire()
