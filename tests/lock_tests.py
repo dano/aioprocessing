@@ -74,6 +74,18 @@ class LockTest(BaseTest):
         self.loop.run_until_complete(with_lock())
         p.join()
 
+    def test_lock_consistency(self):
+        @asyncio.coroutine
+        def do_lock():
+            yield from self.lock.coro_release()
+
+        def loop_run():
+            self.loop.run_until_complete(do_lock())
+
+        self.lock.acquire()
+        self.assertRaises(RuntimeError,
+                          loop_run)
+
     def test_lock_multiproc(self):
         e = Event()
 

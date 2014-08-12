@@ -71,10 +71,19 @@ class CoroBuilder(type):
     def __new__(cls, clsname, bases, dct):
         coro_list = dct.get('coroutines', [])
         pool_workers = dct.get('pool_workers')
+        existing_coros = set()
+        def find_existing_coros(d):
+            for attr in d:
+                if attr.startswith("coro_") or attr.startswith("thread_"):
+                    existing_coros.add(attr)
+
+        find_existing_coros(dct)
         for b in bases:
             coro_list.extend(b.__dict__.get('coroutines', []))
             if not pool_workers:
                 pool_workers = b.__dict__.get('pool_workers')
+            find_existing_coros(b.__dict__)
+
         if not pool_workers:
             pool_workers = cpu_count()
         _AioExecutorMixin.pool_workers = pool_workers
@@ -85,8 +94,12 @@ class CoroBuilder(type):
 
         # Add coro/thread funcs to __dict__
         for func in coro_list:
-            dct['coro_{}'.format(func)] = cls.coro_maker(func)
-            dct['thread_{}'.format(func)] = cls.thread_maker(func)
+            coro_name = 'coro_{}'.format(func)
+            thr_name = 'thread_{}'.format(func)
+            if coro_name not in existing_coros:
+                dct[coro_name] = cls.coro_maker(func)
+            if thr_name not in existing_coros:
+                dct[thr_name] = cls.thread_maker(func)
 
         return super().__new__(cls, clsname, bases, dct)
 

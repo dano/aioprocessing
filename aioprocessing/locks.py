@@ -44,6 +44,10 @@ class AioBaseLock(metaclass=CoroBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._threaded_acquire = False
+        # We can't use super to call these, perhaps because they're
+        # implemented in C.
+        self._parent_release = super().__getattribute__('release')
+        self._parent_acquire = super().__getattribute__('acquire')
 
     def coro_acquire(self, *args, **kwargs):
         self._threaded_acquire = True
@@ -51,8 +55,8 @@ class AioBaseLock(metaclass=CoroBuilder):
 
     def release(self):
         if self._threaded_acquire:
-            return self.run_in_thread(super().release)
-        return super().release()
+            return self.run_in_thread(self._parent_release)
+        return self._parent_release()
 
     def coro_release(self):
         if not self._threaded_acquire:
@@ -60,7 +64,7 @@ class AioBaseLock(metaclass=CoroBuilder):
                                "must be released via release().")
         else:
             self._threaded_acquire = False
-            return self.run_in_executor(super().release, *args, **kwargs)
+            return self.run_in_executor(self._parent_release)
 
 
     def __iter__(self):
@@ -78,6 +82,7 @@ class AioBarrier(Barrier, AioBaseWaiter):
 
 
 class AioCondition(AioBaseWaiter, AioBaseLock, Condition):
+    concrete=Condition
     pool_workers = 1
     coroutines = ['wait_for', 'notify', 'notify_all']
 
