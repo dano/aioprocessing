@@ -44,8 +44,8 @@ class AioBaseLock(metaclass=CoroBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._threaded_acquire = False
-        # We can't use super to call these, perhaps because they're
-        # implemented in C.
+        # We can't use super to call these, because they're declared
+        # as attributes, not methods.
         self._parent_release = super().__getattribute__('release')
         self._parent_acquire = super().__getattribute__('acquire')
 
