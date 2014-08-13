@@ -44,6 +44,7 @@ class AioBaseLock(metaclass=CoroBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._threaded_acquire = False
+        self._parent_release = super().__getattr__('release')
         #TODO add a set of attrs to the dict in metaclass
 
     def coro_acquire(self, *args, **kwargs):
@@ -52,8 +53,8 @@ class AioBaseLock(metaclass=CoroBuilder):
 
     def release(self):
         if self._threaded_acquire:
-            return self.run_in_thread(self._super_get('release'))
-        return self._super_get('release')()
+            return self.run_in_thread(self._parent_release)
+        return self._parent_release()
 
     def coro_release(self):
         if not self._threaded_acquire:
@@ -61,10 +62,7 @@ class AioBaseLock(metaclass=CoroBuilder):
                                "must be released via release().")
         else:
             self._threaded_acquire = False
-            return self.run_in_executor(self._super_get('release'))
-
-    def _super_get(self, attr):
-        return super().__getattr__(attr)
+            return self.run_in_executor(self._parent_release)
 
     def __iter__(self):
         yield from self.coro_acquire()

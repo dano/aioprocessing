@@ -69,7 +69,7 @@ class CoroBuilder(type):
        ThreadPoolExecutor.
     
     """
-    def __new__(cls, clsname, bases, dct):
+    def __new__(cls, clsname, bases, dct, **kwargs):
         coro_list = dct.get('coroutines', [])
         pool_workers = dct.get('pool_workers')
         existing_coros = set()
@@ -94,14 +94,11 @@ class CoroBuilder(type):
         if _AioExecutorMixin not in bases:
             bases += (_AioExecutorMixin,)
 
-        # Add coro/thread funcs to __dict__
+        # Add coro funcs to __dict__
         for func in coro_list:
             coro_name = 'coro_{}'.format(func)
-            thr_name = 'thread_{}'.format(func)
             if coro_name not in existing_coros:
                 dct[coro_name] = cls.coro_maker(func)
-            if thr_name not in existing_coros:
-                dct[thr_name] = cls.thread_maker(func)
 
         return super().__new__(cls, clsname, bases, dct)
 
@@ -110,11 +107,3 @@ class CoroBuilder(type):
         def coro_func(self, *args, **kwargs):
             return self.run_in_executor(getattr(self, func), *args, **kwargs)
         return coro_func
-
-    @staticmethod
-    def thread_maker(func):
-        def thread_func(self, *args, **kwargs):
-            return self.run_in_thread(getattr(self, func), *args, **kwargs)
-        return thread_func
-
-
