@@ -83,8 +83,7 @@ class LockTest(BaseTest):
             self.loop.run_until_complete(do_lock())
 
         self.lock.acquire()
-        self.assertRaises(RuntimeError,
-                          loop_run)
+        self.assertRaises(RuntimeError, loop_run)
 
     def test_lock_multiproc(self):
         e = Event()

@@ -1,5 +1,3 @@
-import asyncio
-from functools import partial
 from multiprocessing import cpu_count
 from concurrent.futures import ThreadPoolExecutor
 
@@ -17,6 +15,11 @@ class _AioExecutorMixin():
     
     """
     pool_workers = None
+    delegate = None
+
+    def __init__(self, *args, **kwargs):
+        if self.delegate:
+            self._obj = self.delegate(*args, **kwargs)
 
     def run_in_executor(self, callback, *args, **kwargs):
         """ Wraps run_in_executor so we can support kwargs.
@@ -28,7 +31,6 @@ class _AioExecutorMixin():
         if not hasattr(self, '_executor'):
             self._executor = self._get_executor()
 
-        loop = asyncio.get_event_loop()
         return util.run_in_executor(self._executor, callback, *args, **kwargs)
 
     def run_in_thread(self, callback, *args, **kwargs):
@@ -40,21 +42,20 @@ class _AioExecutorMixin():
     def _get_executor(self):
         return ThreadPoolExecutor(max_workers=_AioExecutorMixin.pool_workers)
 
+    def __getattr__(self, attr):
+        if (self._obj and hasattr(self._obj, attr) and
+            not attr.startswith("__")):
+            return getattr(self._obj, attr)
+        raise AttributeError
+        
     def __getstate__(self):
-        state = (super().__getstate__()
-                 if hasattr(super(), "__getstate__") else None)
-        if not state:
-            self_dict = self.__dict__
-            self_dict['_executor'] = None
-            return self_dict
-        return state
+        self_dict = self.__dict__
+        self_dict['_executor'] = None
+        return self_dict
 
     def __setstate__(self, state):
-        if '_executor' not in state:
-            super().__setstate__(state)
-        else:
-            self.__dict__.update(state)
-        self.__dict__['_executor'] = self._get_executor()
+        self.__dict__.update(state)
+        self._executor = self._get_executor()
 
 
 class CoroBuilder(type):
@@ -72,6 +73,7 @@ class CoroBuilder(type):
         coro_list = dct.get('coroutines', [])
         pool_workers = dct.get('pool_workers')
         existing_coros = set()
+
         def find_existing_coros(d):
             for attr in d:
                 if attr.startswith("coro_") or attr.startswith("thread_"):

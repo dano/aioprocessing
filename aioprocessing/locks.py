@@ -33,7 +33,7 @@ class _ContextManager:
 
     def __exit__(self, *args):
         try:
-            self._lock.thread_release()
+            self._lock.release()
         finally:
             self._lock = None  # Crudely prevent reuse.
 
@@ -44,10 +44,7 @@ class AioBaseLock(metaclass=CoroBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._threaded_acquire = False
-        # We can't use super to call these, because they're declared
-        # as attributes, not methods.
-        self._parent_release = super().__getattribute__('release')
-        self._parent_acquire = super().__getattribute__('acquire')
+        #TODO add a set of attrs to the dict in metaclass
 
     def coro_acquire(self, *args, **kwargs):
         self._threaded_acquire = True
@@ -55,8 +52,8 @@ class AioBaseLock(metaclass=CoroBuilder):
 
     def release(self):
         if self._threaded_acquire:
-            return self.run_in_thread(self._parent_release)
-        return self._parent_release()
+            return self.run_in_thread(self._super_get('release'))
+        return self._super_get('release')()
 
     def coro_release(self):
         if not self._threaded_acquire:
@@ -64,8 +61,10 @@ class AioBaseLock(metaclass=CoroBuilder):
                                "must be released via release().")
         else:
             self._threaded_acquire = False
-            return self.run_in_executor(self._parent_release)
+            return self.run_in_executor(self._super_get('release'))
 
+    def _super_get(self, attr):
+        return super().__getattr__(attr)
 
     def __iter__(self):
         yield from self.coro_acquire()
@@ -77,33 +76,34 @@ class AioBaseWaiter(metaclass=CoroBuilder):
     coroutines = ['wait']
 
 
-class AioBarrier(Barrier, AioBaseWaiter):
+class AioBarrier(AioBaseWaiter):
+    delegate = Barrier
     pass
 
 
-class AioCondition(AioBaseWaiter, AioBaseLock, Condition):
-    concrete=Condition
+class AioCondition(AioBaseWaiter, AioBaseLock):
+    delegate = Condition
     pool_workers = 1
     coroutines = ['wait_for', 'notify', 'notify_all']
 
 
-class AioEvent(AioBaseWaiter, Event):
-    pass
+class AioEvent(AioBaseWaiter):
+    delegate = Event
 
 
-class AioLock(AioBaseLock, Lock):
-    pass
+class AioLock(AioBaseLock):
+    delegate = Lock
 
 
-class AioRLock(AioBaseLock, RLock):
-    pass
+class AioRLock(AioBaseLock):
+    delegate = RLock
 
 
-class AioSemaphore(AioBaseLock, Semaphore):
-    pass
+class AioSemaphore(AioBaseLock):
+    delegate = Semaphore
 
 
-class AioBoundedSemaphore(AioBaseLock, BoundedSemaphore):
-    pass
+class AioBoundedSemaphore(AioBaseLock):
+    delegate = BoundedSemaphore
 
 

@@ -9,38 +9,27 @@ class AioBaseQueue(metaclass=CoroBuilder):
     coroutines = ['get', 'put']
 
 
-class AioSimpleQueue(AioBaseQueue, SimpleQueue):
+class AioSimpleQueue(AioBaseQueue):
     """ An asyncio-friendly version of mp.SimpleQueue. 
     
     Provides two asyncio.coroutines: coro_get and coro_put,
     which are asynchronous version of get and put, respectively.
     
     """
-    pass
+    delegate = SimpleQueue
 
 
-class AioQueue(AioBaseQueue, Queue):
+class AioQueue(AioBaseQueue):
     """ An asyncio-friendly version of mp.SimpleQueue. 
     
     Provides two asyncio.coroutines: coro_get and coro_put,
     which are asynchronous version of get and put, respectively.
     
     """
-    def __init__(self, maxsize=0, *, ctx):
-        super().__init__(maxsize, ctx=ctx)
-        self._cancelled_join = False
-
-    def cancel_join_thread(self):
-        self._cancelled_join = True
-        super().cancel_join_thread()
-
-    def join_thread(self):
-        super().join_thread()
-        if self._executor and not self._cancelled_join:
-            self._executor.shutdown()
+    delegate = Queue
 
 
-class AioJoinableQueue(AioBaseQueue, JoinableQueue, metaclass=CoroBuilder):
+class AioJoinableQueue(AioBaseQueue):
     """ An asyncio-friendly version of mp.JoinableQueue. 
     
     Provides three asyncio.coroutines: coro_get, coro_put, and
@@ -49,4 +38,5 @@ class AioJoinableQueue(AioBaseQueue, JoinableQueue, metaclass=CoroBuilder):
     
     """
     coroutines = ['join']
+    delegate = JoinableQueue
 

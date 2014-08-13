@@ -21,8 +21,10 @@ def AioPipe(duplex=True):
     conn1, conn2 = multiprocessing.Pipe(duplex=duplex)
     # Transform the returned connection instances into
     # instance of AioConnection.
-    conn1 = retype_instance(conn1, AioConnection, CoroBuilder)
-    conn2 = retype_instance(conn2, AioConnection, CoroBuilder)
+    conn1 = AioConnection(conn1)
+    conn2 = AioConnection(conn2)
+    #conn1 = retype_instance(conn1, AioConnection, CoroBuilder)
+    #conn2 = retype_instance(conn2, AioConnection, CoroBuilder)
     return conn1, conn2
 
 # queues
