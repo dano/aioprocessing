@@ -20,6 +20,8 @@ class _AioExecutorMixin():
     def __init__(self, *args, **kwargs):
         if self.delegate:
             self._obj = self.delegate(*args, **kwargs)
+        else:
+            self._obj = None
 
     def run_in_executor(self, callback, *args, **kwargs):
         """ Wraps run_in_executor so we can support kwargs.
@@ -47,7 +49,7 @@ class _AioExecutorMixin():
             not attr.startswith("__")):
             return getattr(self._obj, attr)
         raise AttributeError
-        
+
     def __getstate__(self):
         self_dict = self.__dict__
         self_dict['_executor'] = None
@@ -65,7 +67,7 @@ class CoroBuilder(type):
     1) Make _AioExecutorMixin a parent of the given class
     2) For every function name listed in the class attribute "coroutines",
        add a new instance method to the class called "coro_<func_name>",
-       which is a asyncio.coroutine that calls func_name in a 
+       which is a asyncio.coroutine that calls func_name in a
        ThreadPoolExecutor.
     
     """
@@ -94,7 +96,8 @@ class CoroBuilder(type):
         if _AioExecutorMixin not in bases:
             bases += (_AioExecutorMixin,)
 
-        # Add coro funcs to __dict__
+        # Add coro funcs to dct, but only if a definition
+        # is not already provided by dct or one of its bases.
         for func in coro_list:
             coro_name = 'coro_{}'.format(func)
             if coro_name not in existing_coros:

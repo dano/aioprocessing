@@ -19,30 +19,11 @@ AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
     ))
 
 
-class _AioProxyMixin:
-    def _async_call(self, method, args=()):
-        return asyncio.async(self.run_in_executor(self._callmethod, method, args))
+class _AioProxyMixin(_AioExecutorMixin):
+    _obj = None
 
-    def run_in_executor(self, callback, *args, **kwargs):
-        """ Wraps run_in_executor so we can support kwargs.
-        
-        BaseEventLoop.run_in_executor does not support kwargs, so
-        we wrap our callback in a lambda if kwargs are provided.
-        
-        """
-        if not hasattr(self, '_executor'):
-            self._executor = self._get_executor()
-
-        return util.run_in_executor(self._executor, callback, *args, **kwargs)
-
-    def run_in_thread(self, callback, *args, **kwargs):
-        if not hasattr(self, '_executor'):
-            self._executor = self._get_executor()
-        fut = self._executor.submit(callback, *args, **kwargs)
-        return fut.result()
-
-    def _get_executor(self):
-        return ThreadPoolExecutor(max_workers=_AioExecutorMixin.pool_workers)
+    def _async_call(self, method, *args, **kwargs):
+        return asyncio.async(self.run_in_executor(self._callmethod, method, args, kwargs))
 
 
 class ProxyCoroBuilder(type):
@@ -58,8 +39,8 @@ class ProxyCoroBuilder(type):
 
     @staticmethod
     def coro_maker(func):
-        def coro_func(self, *args):
-            return asyncio.async(self._async_call(func, args))
+        def coro_func(self, *args, **kwargs):
+            return asyncio.async(self._async_call(func, *args, **kwargs))
         return coro_func
 
 
@@ -74,22 +55,22 @@ class AioQueueProxy(AioBaseQueueProxy, metaclass=ProxyCoroBuilder):
     coroutines = ['get', 'put']
 
 
-class AioAcquirerProxy(AcquirerProxy, metaclass=CoroBuilder):
+class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
     #delegate = AcquirerProxy
-    coroutines = ['acquire']
+    coroutines = ['acquire', 'release']
 
 
-class AioBarrierProxy(BarrierProxy, metaclass=CoroBuilder):
+class AioBarrierProxy(BarrierProxy, metaclass=ProxyCoroBuilder):
     #delegate = BarrierProxy
     coroutines = ['wait']
 
 
-class AioEventProxy(EventProxy, metaclass=CoroBuilder):
+class AioEventProxy(EventProxy, metaclass=ProxyCoroBuilder):
     #delegate = EventProxy
     coroutines = ['wait']
 
 
-class AioConditionProxy(ConditionProxy, metaclass=CoroBuilder):
+class AioConditionProxy(ConditionProxy, metaclass=ProxyCoroBuilder):
     #delegate = ConditionProxy
     coroutines = ['wait', 'wait_for']
 

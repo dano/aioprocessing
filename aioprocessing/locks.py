@@ -33,7 +33,7 @@ class _ContextManager:
 
     def __exit__(self, *args):
         try:
-            self._lock.release()
+            self._lock.release(choose_thread=True)
         finally:
             self._lock = None  # Crudely prevent reuse.
 
@@ -44,25 +44,51 @@ class AioBaseLock(metaclass=CoroBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._threaded_acquire = False
-        self._parent_release = super().__getattr__('release')
-        #TODO add a set of attrs to the dict in metaclass
 
     def coro_acquire(self, *args, **kwargs):
-        self._threaded_acquire = True
-        return self.run_in_executor(self.acquire, *args, **kwargs)
+        def lock_acquired(fut):
+            if fut.result():
+                self._threaded_acquire = True
 
-    def release(self):
+        out = self.run_in_executor(self._obj.acquire, *args, **kwargs)
+        out.add_done_callback(lock_acquired)
+        return out
+
+    def release(self, choose_thread=False):
         if self._threaded_acquire:
-            return self.run_in_thread(self._parent_release)
-        return self._parent_release()
-
-    def coro_release(self):
-        if not self._threaded_acquire:
-            raise RuntimeError("A lock acquired via acquire() "
-                               "must be released via release().")
+            if choose_thread:
+                out = self.run_in_thread(self._obj.release)
+            else:
+                raise RuntimeError(
+                    "A lock acquired via coro_acquire must be released "
+                    "via coro_release, or via release(choose_thread=True)"
+                    )
         else:
+            out = self._obj.release()
+        self._threaded_acquire = False
+        return out
+
+    def coro_release(self, choose_thread=False):
+        def lock_released(fut):
             self._threaded_acquire = False
-            return self.run_in_executor(self._parent_release)
+        if not self._threaded_acquire:
+            if choose_thread:
+                # Do a synchronous release, and wrap it in a future
+                # to simulate async behavior.
+                fut = asyncio.Future()
+                try:
+                    fut.set_result(self._obj.release())
+                except Exception as e:
+                    fut.set_exception(e)
+                out = fut
+                self._threaded_acquire = False
+            else:
+                raise RuntimeError("A lock acquired via acquire() "
+                                   "must be released via release().")
+        else:
+            out = self.run_in_executor(self._obj.release)
+            out.add_done_callback(lock_released)
+        return out
 
     def __iter__(self):
         yield from self.coro_acquire()

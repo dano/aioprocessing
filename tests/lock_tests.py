@@ -4,6 +4,9 @@ import unittest
 import aioprocessing
 from multiprocessing import Process, Event
 
+MANAGER_TYPE = 1
+STANDARD_TYPE = 2
+
 def get_value(self):
     try:
         return self.get_value()
@@ -37,6 +40,7 @@ def do_lock_acquire(lock, e):
 class LockTest(BaseTest):
     def setUp(self):
         super().setUp()
+        self.type_ = STANDARD_TYPE
         self.lock = aioprocessing.AioLock()
 
     def test_lock(self):
@@ -53,6 +57,8 @@ class LockTest(BaseTest):
         self.loop.run_until_complete(do_async_lock())
 
     def test_lock_cm(self):
+        if self.type_ == MANAGER_TYPE:
+            self.skipTest("Not relevant for manager type")
         event = Event()
         event2 = Event()
         @asyncio.coroutine
@@ -75,6 +81,8 @@ class LockTest(BaseTest):
         p.join()
 
     def test_lock_consistency(self):
+        if self.type_ == MANAGER_TYPE:
+            self.skipTest("Not relevant for manager type")
         @asyncio.coroutine
         def do_lock():
             yield from self.lock.coro_release()
@@ -100,11 +108,30 @@ class LockTest(BaseTest):
         e.wait()
         self.loop.run_until_complete(do_async_lock())
 
+class LockManagerTest(LockTest):
+    def setUp(self):
+        super().setUp()
+        self.type_ = MANAGER_TYPE
+        self.manager = aioprocessing.Manager()
+        self.lock = self.manager.AioLock()
 
 class RLockTest(LockTest):
     def setUp(self):
         super().setUp()
         self.lock = aioprocessing.AioRLock()
+
+class RLockManagerTest(LockTest):
+    def setUp(self):
+        super().setUp()
+        self.type_ = MANAGER_TYPE
+        self.manager = aioprocessing.Manager()
+        self.lock = self.manager.AioRLock()
+
+class LockMixingTest(BaseTest):
+    def setup(self):
+        super().setUp()
+        self.lock = aioprocessing.AioRLock()
+
 
 class SemaphoreTest(BaseTest):
     def setUp(self):
@@ -123,7 +150,7 @@ class SemaphoreTest(BaseTest):
         self.assertReturnsIfImplemented(0, get_value, sem)
         self.assertEqual(sem.acquire(False), False)
         self.assertReturnsIfImplemented(0, get_value, sem)
-        self.assertEqual(sem.release(), None)
+        self.assertEqual(sem.release(choose_thread=True), None)
         self.assertReturnsIfImplemented(1, get_value, sem)
         self.assertEqual(sem.release(), None)
         self.assertReturnsIfImplemented(2, get_value, sem)
