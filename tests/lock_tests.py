@@ -42,7 +42,6 @@ def do_lock_acquire(lock, e):
 def sync_lock(lock, event, event2, queue):
     event2.wait()
     queue.put(lock.acquire(False))
-    #self.assertEqual(self.lock.acquire(False), False)
     event.set()
     lock.acquire()
     lock.release()
