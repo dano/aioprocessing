@@ -59,17 +59,11 @@ class AioBaseLock(metaclass=CoroBuilder):
         return out
 
     def __getstate__(self):
-        print("in here")
         state = super().__getstate__()
-        print("state is {}".format(state))
-        try:
-            del state['_threaded_acquire']
-        except KeyError:
-            pass
+        state['_threaded_acquire'] = False
         return state
 
     def __setstate__(self, state):
-        state['_threaded_acquire'] = False
         super().__setstate__(state)
 
     def release(self, choose_thread=False):

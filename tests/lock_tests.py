@@ -4,7 +4,7 @@ import asyncio
 import unittest
 import traceback
 import aioprocessing
-from multiprocessing import Process, Event, Queue
+from multiprocessing import Process, Event, Queue, get_context
 
 MANAGER_TYPE = 1
 STANDARD_TYPE = 2
@@ -134,7 +134,7 @@ def mix_release(lock, q):
     try:
         try:
             lock.release()
-        except AssertionError:
+        except (ValueError, AssertionError):
             pass
         else:
             q.put("Didn't get excepted AssertionError")
@@ -185,7 +185,12 @@ class LockMixingTest(BaseTest):
         self.loop.run_until_complete(do_release())
         out = q.get(timeout=5)
         p.join()
-        self.assertTrue(isinstance(out, bool))
+        self.assertTrue(isinstance(out, bool), out)
+
+class SpawnLockMixingTest(LockMixingTest):
+    def setUp(self):
+        super().setUp()
+        self.lock = aioprocessing.AioLock(context=get_context("spawn"))
 
 
 class SemaphoreTest(BaseTest):
