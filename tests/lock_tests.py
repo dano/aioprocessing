@@ -39,6 +39,14 @@ def do_lock_acquire(lock, e):
     time.sleep(2)
     lock.release()
 
+def sync_lock(lock, event, event2, queue):
+    event2.wait()
+    queue.put(lock.acquire(False))
+    #self.assertEqual(self.lock.acquire(False), False)
+    event.set()
+    lock.acquire()
+    lock.release()
+
 class LockTest(BaseTest):
     def setUp(self):
         super().setUp()
@@ -63,6 +71,7 @@ class LockTest(BaseTest):
             self.skipTest("Not relevant for manager type")
         event = Event()
         event2 = Event()
+        q = Queue()
         @asyncio.coroutine
         def with_lock():
             with (yield from self.lock):
@@ -70,17 +79,11 @@ class LockTest(BaseTest):
                 asyncio.sleep(1)
                 event.wait()
 
-        def sync_lock(lock, event2):
-            event2.wait()
-            self.assertEqual(self.lock.acquire(False), False)
-            event.set()
-            self.lock.acquire()
-            self.lock.release()
-
-        p = Process(target=sync_lock, args=(self.lock, event2))
+        p = Process(target=sync_lock, args=(self.lock, event, event2, q))
         p.start()
         self.loop.run_until_complete(with_lock())
         p.join()
+        self.assertFalse(q.get())
 
     def test_lock_consistency(self):
         if self.type_ == MANAGER_TYPE:
