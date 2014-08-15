@@ -1,7 +1,7 @@
 import asyncio
 import unittest
 import aioprocessing
-from multiprocessing import Process
+from multiprocessing import Process, Event
 from concurrent.futures import ProcessPoolExecutor
 
 class BaseTest(unittest.TestCase):
@@ -12,8 +12,9 @@ def queue_put(q, val):
     val = q.put(val)
     return val
 
-def queue_get(q):
+def queue_get(q, e):
     val = q.get()
+    e.set()
     q.put(val)
 
 
@@ -26,6 +27,7 @@ class QueueTest(BaseTest):
             yield from q.coro_put(1)
 
         self.loop.run_until_complete(queue_put())
+        self.assertEqual(q.get(), 1)
 
     def test_put_get(self):
         q = aioprocessing.AioQueue()
@@ -43,17 +45,19 @@ class QueueTest(BaseTest):
 
     def test_get_put(self):
         q = aioprocessing.AioQueue()
+        e = Event()
         val = 2
 
         @asyncio.coroutine
         def queue_put():
             yield from q.coro_put(val)
 
-        p = Process(target=queue_get, args=(q,))
+        p = Process(target=queue_get, args=(q, e))
         p.start()
         self.loop.run_until_complete(queue_put())
-        p.join()
+        e.wait()
         out = q.get()
+        p.join()
         self.assertEqual(out, val)
 
     def test_simple_queue(self):
