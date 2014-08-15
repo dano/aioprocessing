@@ -1,8 +1,10 @@
+import sys
 import time
 import asyncio
 import unittest
+import traceback
 import aioprocessing
-from multiprocessing import Process, Event
+from multiprocessing import Process, Event, Queue
 
 MANAGER_TYPE = 1
 STANDARD_TYPE = 2
@@ -108,6 +110,7 @@ class LockTest(BaseTest):
         e.wait()
         self.loop.run_until_complete(do_async_lock())
 
+
 class LockManagerTest(LockTest):
     def setUp(self):
         super().setUp()
@@ -127,10 +130,62 @@ class RLockManagerTest(LockTest):
         self.manager = aioprocessing.Manager()
         self.lock = self.manager.AioRLock()
 
+def mix_release(lock, q):
+    try:
+        try:
+            lock.release()
+        except AssertionError:
+            pass
+        else:
+            q.put("Didn't get excepted AssertionError")
+        lock.acquire()
+        lock.release()
+        q.put(True)
+    except Exception as e:
+        exc = traceback.format_exception(*sys.exc_info())
+        q.put(exc)
+
+
 class LockMixingTest(BaseTest):
-    def setup(self):
+    def setUp(self):
         super().setUp()
         self.lock = aioprocessing.AioRLock()
+
+    def test_mix_sync_to_async(self):
+        self.lock.acquire()
+
+        @asyncio.coroutine
+        def do_release(choose_thread=False):
+            yield from self.lock.coro_release(choose_thread=choose_thread)
+
+        self.assertRaises(RuntimeError,
+                          self.loop.run_until_complete, do_release())
+        self.loop.run_until_complete(do_release(choose_thread=True))
+
+    def test_mix_async_to_sync(self):
+        @asyncio.coroutine
+        def do_acquire():
+            yield from self.lock.coro_acquire()
+
+        self.loop.run_until_complete(do_acquire())
+        self.assertRaises(RuntimeError, self.lock.release)
+        self.lock.release(choose_thread=True)
+
+    def test_mix_with_procs(self):
+        @asyncio.coroutine
+        def do_acquire():
+            yield from self.lock.coro_acquire()
+        @asyncio.coroutine
+        def do_release(choose_thread=False):
+            yield from self.lock.coro_release(choose_thread=choose_thread)
+        q = Queue()
+        p = Process(target=mix_release, args=(self.lock, q))
+        self.loop.run_until_complete(do_acquire())
+        p.start()
+        self.loop.run_until_complete(do_release())
+        out = q.get(timeout=5)
+        p.join()
+        self.assertTrue(isinstance(out, bool))
 
 
 class SemaphoreTest(BaseTest):

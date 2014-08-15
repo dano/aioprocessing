@@ -3,6 +3,7 @@ import asyncio
 from .executor import _AioExecutorMixin, CoroBuilder
 from  multiprocessing.synchronize import (Event, Lock, RLock, BoundedSemaphore,
                                           Condition, Semaphore, Barrier)
+from multiprocessing.util import register_after_fork
 
 __all__ = ["AioLock", "AioRLock", "AioBarrier", "AioCondition", "AioEvent",
            "AioSemaphore", "AioBoundedSemaphore"]
@@ -44,6 +45,9 @@ class AioBaseLock(metaclass=CoroBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._threaded_acquire = False
+        def _after_fork(obj):
+            obj._threaded_acquire = False
+        register_after_fork(self, _after_fork)
 
     def coro_acquire(self, *args, **kwargs):
         def lock_acquired(fut):
@@ -53,6 +57,20 @@ class AioBaseLock(metaclass=CoroBuilder):
         out = self.run_in_executor(self._obj.acquire, *args, **kwargs)
         out.add_done_callback(lock_acquired)
         return out
+
+    def __getstate__(self):
+        print("in here")
+        state = super().__getstate__()
+        print("state is {}".format(state))
+        try:
+            del state['_threaded_acquire']
+        except KeyError:
+            pass
+        return state
+
+    def __setstate__(self, state):
+        state['_threaded_acquire'] = False
+        super().__setstate__(state)
 
     def release(self, choose_thread=False):
         if self._threaded_acquire:

@@ -3,7 +3,6 @@ from multiprocessing import get_context
 
 from .managers import *
 from .connection import *
-from .util import retype_instance
 from .executor import CoroBuilder
 
 __all__ = ['AioProcess', 'AioPipe', 'AioQueue', 'AioJoinableQueue', 

@@ -18,7 +18,7 @@ class AioConnection(metaclass=CoroBuilder):
 
 def AioClient(*args, **kwargs):
     conn = Client(*args, **kwargs)
-    return retype_instance(conn, AioConnection, CoroBuilder)
+    return AioConnection(conn)
 
 
 class AioListener(metaclass=CoroBuilder):
