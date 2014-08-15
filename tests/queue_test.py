@@ -4,9 +4,6 @@ import aioprocessing
 from multiprocessing import Process, Event
 from concurrent.futures import ProcessPoolExecutor
 
-class BaseTest(unittest.TestCase):
-    def setUp(self):
-        self.loop = asyncio.get_event_loop()
 
 def queue_put(q, val):
     val = q.put(val)
@@ -16,6 +13,11 @@ def queue_get(q, e):
     val = q.get()
     e.set()
     q.put(val)
+
+
+class BaseTest(unittest.TestCase):
+    def setUp(self):
+        self.loop = asyncio.get_event_loop()
 
 
 class QueueTest(BaseTest):
