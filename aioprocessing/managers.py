@@ -11,7 +11,6 @@ from . import queues
 from . import util
 from .executor import _AioExecutorMixin, CoroBuilder
 
-__all__ = ['AioManager']
 
 AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
     'task_done', 'get', 'qsize', 'put', 'put_nowait', 

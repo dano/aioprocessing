@@ -30,6 +30,13 @@ class _AioExecutorMixin():
         return util.run_in_executor(self._executor, callback, *args, **kwargs)
 
     def run_in_thread(self, callback, *args, **kwargs):
+        """ Runs a method in an executor thread.
+        
+        This is used when a method must be run in a thread (e.g.
+        to that a lock is released in the same thread it was
+        acquired), but should be run in a blocking way.
+        
+        """
         if not hasattr(self, '_executor'):
             self._executor = self._get_executor()
         fut = self._executor.submit(callback, *args, **kwargs)
@@ -94,6 +101,13 @@ class CoroBuilder(type):
         return super().__new__(cls, clsname, bases, dct)
 
     def __init__(cls, name, bases, dct):
+        """ Properly initialize a coroutine wrapper.
+        
+        Sets pool_workers and delegate on the class, and also
+        adds an __init__ method to it that instantiates the
+        delegate with the proper context.
+        
+        """
         super().__init__(name, bases, dct)
         pool_workers = dct.get('pool_workers')
         delegate = dct.get('delegate')
