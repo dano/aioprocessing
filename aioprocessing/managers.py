@@ -11,7 +11,7 @@ from . import queues
 from . import util
 from .executor import _AioExecutorMixin, CoroBuilder
 
-__all__ = ['Manager']
+__all__ = ['AioManager']
 
 AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
     'task_done', 'get', 'qsize', 'put', 'put_nowait', 
@@ -75,22 +75,16 @@ class AioConditionProxy(ConditionProxy, metaclass=ProxyCoroBuilder):
     coroutines = ['wait', 'wait_for']
 
 
-class AioManager(SyncManager):
+class AioSyncManager(SyncManager):
     """ A mp.Manager that provides asyncio-friendly objects. """
     pass
-AioManager.register("AioQueue", Queue, AioQueueProxy)
-AioManager.register("AioBarrier", Barrier, AioQueueProxy)
-AioManager.register("AioBoundedSemaphore", BoundedSemaphore, AioAcquirerProxy)
-AioManager.register("AioCondition", Condition, AioConditionProxy)
-AioManager.register("AioEvent", Event, AioQueueProxy)
-AioManager.register("AioLock", Lock, AioAcquirerProxy)
-AioManager.register("AioRLock", RLock, AioAcquirerProxy)
-AioManager.register("AioSemaphore", Semaphore, AioAcquirerProxy)
 
-
-def Manager():
-    """ Starts and returns an asyncio-friendly mp.SyncManager. """
-    m = AioManager()
-    m.start()
-    return m
+AioSyncManager.register("AioQueue", Queue, AioQueueProxy)
+AioSyncManager.register("AioBarrier", Barrier, AioQueueProxy)
+AioSyncManager.register("AioBoundedSemaphore", BoundedSemaphore, AioAcquirerProxy)
+AioSyncManager.register("AioCondition", Condition, AioConditionProxy)
+AioSyncManager.register("AioEvent", Event, AioQueueProxy)
+AioSyncManager.register("AioLock", Lock, AioAcquirerProxy)
+AioSyncManager.register("AioRLock", RLock, AioAcquirerProxy)
+AioSyncManager.register("AioSemaphore", Semaphore, AioAcquirerProxy)
 

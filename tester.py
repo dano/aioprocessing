@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import asyncio
-from aioprocessing import Manager
+from aioprocessing import AioManager
 from concurrent.futures import ProcessPoolExecutor
 
 @asyncio.coroutine
@@ -29,7 +29,7 @@ def do_work(q):
     q.put(item)
 
 if __name__  == "__main__":
-    m = Manager()
+    m = AioManager()
     q = m.AioQueue()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(do_work(q))

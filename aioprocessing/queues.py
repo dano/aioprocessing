@@ -1,6 +1,6 @@
 import asyncio
 import multiprocessing
-from multiprocessing.queues import Queue, SimpleQueue, JoinableQueue
+from multiprocessing import Queue, SimpleQueue, JoinableQueue
 
 from .executor import CoroBuilder
 

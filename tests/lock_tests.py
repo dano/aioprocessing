@@ -117,7 +117,7 @@ class LockManagerTest(LockTest):
     def setUp(self):
         super().setUp()
         self.type_ = MANAGER_TYPE
-        self.manager = aioprocessing.Manager()
+        self.manager = aioprocessing.AioManager()
         self.lock = self.manager.AioLock()
 
 class RLockTest(LockTest):
@@ -129,7 +129,7 @@ class RLockManagerTest(LockTest):
     def setUp(self):
         super().setUp()
         self.type_ = MANAGER_TYPE
-        self.manager = aioprocessing.Manager()
+        self.manager = aioprocessing.AioManager()
         self.lock = self.manager.AioRLock()
 
 def mix_release(lock, q):
@@ -192,7 +192,8 @@ class LockMixingTest(BaseTest):
 class SpawnLockMixingTest(LockMixingTest):
     def setUp(self):
         super().setUp()
-        self.lock = aioprocessing.AioLock(context=get_context("spawn"))
+        context = get_context('spawn')
+        self.lock = aioprocessing.AioLock(context=context)
 
 
 class SemaphoreTest(BaseTest):
@@ -320,3 +321,6 @@ class ConditionTest(BaseTest):
         p.start()
         self.loop.run_until_complete(wait_for_pred())
         p.join()
+
+if __name__ == "__main__":
+    unittest.main()

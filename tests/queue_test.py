@@ -76,7 +76,7 @@ class QueueTest(BaseTest):
 
 class ManagerQueueTest(BaseTest):
     def test_executor(self):
-        m = aioprocessing.Manager()
+        m = aioprocessing.AioManager()
         q = m.AioQueue()
         p = ProcessPoolExecutor(max_workers=1)
         val = 4

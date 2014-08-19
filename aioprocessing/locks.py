@@ -1,7 +1,7 @@
 import asyncio
 
 from .executor import _AioExecutorMixin, CoroBuilder
-from  multiprocessing.synchronize import (Event, Lock, RLock, BoundedSemaphore,
+from  multiprocessing import (Event, Lock, RLock, BoundedSemaphore,
                                           Condition, Semaphore, Barrier)
 from multiprocessing.util import register_after_fork
 
@@ -43,7 +43,6 @@ class AioBaseLock(metaclass=CoroBuilder):
     pool_workers = 1
     coroutines = ['acquire', 'release']
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self._threaded_acquire = False
         def _after_fork(obj):
             obj._threaded_acquire = False
@@ -117,7 +116,7 @@ class AioBarrier(AioBaseWaiter):
     pass
 
 
-class AioCondition(AioBaseWaiter, AioBaseLock):
+class AioCondition(AioBaseLock, AioBaseWaiter):
     delegate = Condition
     pool_workers = 1
     coroutines = ['wait_for', 'notify', 'notify_all']

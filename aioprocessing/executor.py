@@ -1,4 +1,5 @@
 from multiprocessing import cpu_count
+from functools import partial, wraps
 from concurrent.futures import ThreadPoolExecutor
 
 from . import util
@@ -14,14 +15,7 @@ class _AioExecutorMixin():
     as part of its state.
     
     """
-    pool_workers = None
-    delegate = None
-
-    def __init__(self, *args, **kwargs):
-        if self.delegate:
-            self._obj = self.delegate(*args, **kwargs)
-        else:
-            self._obj = None
+    pool_workers = cpu_count()
 
     def run_in_executor(self, callback, *args, **kwargs):
         """ Wraps run_in_executor so we can support kwargs.
@@ -42,13 +36,13 @@ class _AioExecutorMixin():
         return fut.result()
 
     def _get_executor(self):
-        return ThreadPoolExecutor(max_workers=_AioExecutorMixin.pool_workers)
+        return ThreadPoolExecutor(max_workers=self.pool_workers)
 
     def __getattr__(self, attr):
         if (self._obj and hasattr(self._obj, attr) and
             not attr.startswith("__")):
             return getattr(self._obj, attr)
-        raise AttributeError
+        raise AttributeError(attr)
 
     def __getstate__(self):
         self_dict = self.__dict__
@@ -73,7 +67,6 @@ class CoroBuilder(type):
     """
     def __new__(cls, clsname, bases, dct, **kwargs):
         coro_list = dct.get('coroutines', [])
-        pool_workers = dct.get('pool_workers')
         existing_coros = set()
 
         def find_existing_coros(d):
@@ -83,14 +76,9 @@ class CoroBuilder(type):
 
         find_existing_coros(dct)
         for b in bases:
-            coro_list.extend(b.__dict__.get('coroutines', []))
-            if not pool_workers:
-                pool_workers = b.__dict__.get('pool_workers')
-            find_existing_coros(b.__dict__)
-
-        if not pool_workers:
-            pool_workers = cpu_count()
-        _AioExecutorMixin.pool_workers = pool_workers
+            b_dct = b.__dict__
+            coro_list.extend(b_dct.get('coroutines', []))
+            find_existing_coros(b_dct)
 
         # Add _AioExecutorMixin to bases.
         if _AioExecutorMixin not in bases:
@@ -105,8 +93,43 @@ class CoroBuilder(type):
 
         return super().__new__(cls, clsname, bases, dct)
 
+    def __init__(cls, name, bases, dct):
+        super().__init__(name, bases, dct)
+        pool_workers = dct.get('pool_workers')
+        delegate = dct.get('delegate')
+        old_init = dct.get('__init__')
+        for b in bases:
+            b_dct = b.__dict__
+            if not pool_workers:
+                pool_workers = b_dct.get('pool_workers', None)
+            if not delegate:
+                delegate = b_dct.get('delegate', None)
+            if not old_init:
+                old_init = b_dct.get('__init__')
+
+        if not pool_workers:
+            pool_workers = cpu_count()
+
+        cls.delegate = delegate
+        cls.pool_workers = pool_workers
+
+        @wraps(old_init)
+        def init_func(self, *args, **kwargs):
+            if old_init:
+                old_init(self, *args, **kwargs)
+            if self.delegate:
+                ctx = kwargs.pop('ctx', None)
+                if ctx:
+                    cls = getattr(ctx, self.delegate.__name__)
+                else:
+                    cls = self.delegate
+                self._obj = cls(*args, **kwargs)
+        init_func.__name__ = "__init__"
+        cls.__init__ = init_func
+
     @staticmethod
     def coro_maker(func):
         def coro_func(self, *args, **kwargs):
             return self.run_in_executor(getattr(self, func), *args, **kwargs)
         return coro_func
+

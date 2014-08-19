@@ -24,3 +24,5 @@ class PipeTest(BaseTest):
 
         self.loop.run_until_complete(conn_recv())
 
+if __name__ == "__main__":
+    unittest.main()
