@@ -115,9 +115,9 @@ class CoroBuilder(type):
         for b in bases:
             b_dct = b.__dict__
             if not pool_workers:
-                pool_workers = b_dct.get('pool_workers', None)
+                pool_workers = b_dct.get('pool_workers')
             if not delegate:
-                delegate = b_dct.get('delegate', None)
+                delegate = b_dct.get('delegate')
             if not old_init:
                 old_init = b_dct.get('__init__')
 
@@ -125,12 +125,24 @@ class CoroBuilder(type):
             pool_workers = cpu_count()
 
         cls.delegate = delegate
-        cls.pool_workers = pool_workers
+        # If we found a value for pool_workers, set it. If not,
+        # AioExecutorMixin sets a default that will be used.
+        if pool_workers:
+            cls.pool_workers = pool_workers
 
+        # Here's the __init__ we want every wrapper class to use.
+        # It just instantiates the delegate mp object using the 
+        # correct context.
         @wraps(old_init)
         def init_func(self, *args, **kwargs):
+            # Be sure to call the original __init__, if there
+            # was one.
             if old_init:
                 old_init(self, *args, **kwargs)
+            # If we're wrapping a mp object, instantiate it here.
+            # If a context was specified, we instaniate the mp class
+            # using that context. Otherwise, we'll just use the default
+            # context.
             if self.delegate:
                 ctx = kwargs.pop('ctx', None)
                 if ctx:
@@ -138,7 +150,6 @@ class CoroBuilder(type):
                 else:
                     cls = self.delegate
                 self._obj = cls(*args, **kwargs)
-        init_func.__name__ = "__init__"
         cls.__init__ = init_func
 
     @staticmethod
