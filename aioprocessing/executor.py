@@ -81,6 +81,9 @@ class CoroBuilder(type):
                 if attr.startswith("coro_") or attr.startswith("thread_"):
                     existing_coros.add(attr)
 
+        # Determine if any bases include the coroutines attribute, or
+        # if either this class or a base class provides an actual
+        # implementation for a coroutine method.
         find_existing_coros(dct)
         for b in bases:
             b_dct = b.__dict__
@@ -92,7 +95,7 @@ class CoroBuilder(type):
             bases += (_AioExecutorMixin,)
 
         # Add coro funcs to dct, but only if a definition
-        # is not already provided by dct or one of its bases.
+        # is not already provided by dct or one of our bases.
         for func in coro_list:
             coro_name = 'coro_{}'.format(func)
             if coro_name not in existing_coros:
@@ -112,6 +115,8 @@ class CoroBuilder(type):
         pool_workers = dct.get('pool_workers')
         delegate = dct.get('delegate')
         old_init = dct.get('__init__')
+        # Search bases for values we care about, if we didn't
+        # find them on the child class.
         for b in bases:
             b_dct = b.__dict__
             if not pool_workers:
@@ -121,10 +126,8 @@ class CoroBuilder(type):
             if not old_init:
                 old_init = b_dct.get('__init__')
 
-        if not pool_workers:
-            pool_workers = cpu_count()
-
         cls.delegate = delegate
+
         # If we found a value for pool_workers, set it. If not,
         # AioExecutorMixin sets a default that will be used.
         if pool_workers:
