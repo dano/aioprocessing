@@ -68,7 +68,7 @@ class CoroBuilder(type):
     1) Make _AioExecutorMixin a parent of the given class
     2) For every function name listed in the class attribute "coroutines",
        add a new instance method to the class called "coro_<func_name>",
-       which is a asyncio.coroutine that calls func_name in a
+       which is an asyncio.coroutine that calls func_name in a
        ThreadPoolExecutor.
     
     """
