@@ -4,9 +4,7 @@ import aioprocessing
 from multiprocessing import Process
 from concurrent.futures import ProcessPoolExecutor
 
-class BaseTest(unittest.TestCase):
-    def setUp(self):
-        self.loop = asyncio.get_event_loop()
+from ._base_test import BaseTest
 
 def conn_send(conn, val):
     conn.send(val)

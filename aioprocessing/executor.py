@@ -1,5 +1,5 @@
 from multiprocessing import cpu_count
-from functools import partial, wraps
+from functools import wraps
 from concurrent.futures import ThreadPoolExecutor
 
 from . import util
