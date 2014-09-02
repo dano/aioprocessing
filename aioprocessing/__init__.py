@@ -12,9 +12,14 @@ def AioProcess(*args, context=None, **kwargs):
     from .process import AioProcess
     return AioProcess(*args, **kwargs)
 
+def AioPool(*args, context=None, **kwargs):
+    context = context if context else multiprocessing.get_context()
+    from .pool import AioPool
+    return AioPool(*args, **kwargs)
+
 def AioManager(context=None):
     """ Starts and returns an asyncio-friendly mp.SyncManager. """
-    context = multiprocessing.get_context()
+    context = context if context else multiprocessing.get_context()
     from .managers import AioSyncManager
     m = AioSyncManager(ctx=context)
     m.start()
