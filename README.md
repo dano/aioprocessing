@@ -61,9 +61,9 @@ if __name__ == "__main__":
 How does it work?
 -----------------
 
-In most cases, this library makes blocking calls to [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html)
-non-blocking by making the call in a [`ThreadPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor), and running that
-executor using [`asyncio.run_in_executor()`](https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.BaseEventLoop.run_in_executor). 
+In most cases, this library makes blocking calls to [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html) methods
+non-blocking by executing the call in a [`ThreadPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor), using
+[`asyncio.run_in_executor()`](https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.BaseEventLoop.run_in_executor). 
 It does *not* re-implement multiprocessing using asynchronous I/O. This means 
 there is extra overhead added when you use `aioprocessing` objects instead of 
 `multiprocessing` objects, because each one is generally introducing at least 
@@ -76,6 +76,28 @@ existing `callback` and `error_callback` keyword arguments in the various
 [`Pool.*_async`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async) methods to run them as `asyncio` coroutines. Note that 
 `multiprocessing.Pool` is actually using threads internally, so the thread/fork
 mixing caveat still applies.
+
+What parts of `multiprocessing` are supported?
+---------------------------------------------
+
+Most of them:
+
+- `Pool`
+- `Process`
+- `Lock`
+- `RLock`
+- `Semaphore`
+- `BoundedSemaphore`
+- `Event`
+- `Condition`
+- `Barrier`
+- `connection.Connection`
+- `connection.Listener`
+- `connection.Client`
+- `Queue`
+- `JoinableQueue`
+- `SimpleQueue`
+- All `managers.SyncManager` `Proxy` versions of the items above (`SyncManager.Queue`, `SyncManager.Lock()`, etc.).
 
 Note
 ----

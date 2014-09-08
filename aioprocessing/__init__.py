@@ -4,7 +4,7 @@ from .connection import *
 from .managers import *
 
 __all__ = ['AioProcess', 'AioManager', 'AioPipe', 'AioQueue', 'AioSimpleQueue',
-           'AioJoinableQueue', 'AioLock', 'AioRLock', 'AioCondition', 
+           'AioJoinableQueue', 'AioLock', 'AioRLock', 'AioCondition', 'AioPool',
            'AioSemaphore', 'AioBoundedSemaphore', 'AioEvent', 'AioBarrier']
 
 version = "0.0.1"
