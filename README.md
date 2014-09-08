@@ -66,7 +66,7 @@ non-blocking by making the call in a `ThreadPoolExecutor`, and running that
 executor using `asyncio.run_in_executor()`. It does *not* re-implement 
 multiprocessing using asynchronous I/O. This means there is extra overhead
 added when you use `aioprocessing` objects instead of `multiprocessing` objects,
-because each one is generally introducing at least one `Threading.Thread` 
+because each one is generally introducing at least one [`threading.Thread`](https://docs.python.org/2/library/threading.html#thread-objects) 
 object, along with a `ThreadPoolExecutor`. It also means that all the normal
 risks you get when you mix threads with fork apply here, too.
 
