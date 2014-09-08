@@ -7,6 +7,9 @@ __all__ = ['AioProcess', 'AioManager', 'AioPipe', 'AioQueue', 'AioSimpleQueue',
            'AioJoinableQueue', 'AioLock', 'AioRLock', 'AioCondition', 
            'AioSemaphore', 'AioBoundedSemaphore', 'AioEvent', 'AioBarrier']
 
+version = "0.0.1"
+version_info = (0, 0, 1)
+
 def AioProcess(*args, context=None, **kwargs):
     context = context if context else multiprocessing.get_context()
     from .process import AioProcess
