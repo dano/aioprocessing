@@ -73,7 +73,7 @@ risks you get when you mix threads with fork apply here, too.
 
 The one exception to this is `aioprocessing.AioPool`, which makes use of the 
 existing `callback` and `error_callback` keyword arguments in the various 
-`Pool.*_async` methods to run them as `asyncio` coroutines. Note that 
+[`Pool.*_async`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async) methods to run them as `asyncio` coroutines. Note that 
 `multiprocessing.Pool` is actually using threads internally, so the thread/fork
 mixing caveat still applies.
 
