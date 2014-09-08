@@ -185,6 +185,12 @@ class SpawnLockMixingTest(LockMixingTest):
         context = get_context('spawn')
         self.lock = aioprocessing.AioLock(context=context)
 
+class ForkServerLockMixingTest(LockMixingTest):
+    def setUp(self):
+        super().setUp()
+        context = get_context('forkserver')
+        self.lock = aioprocessing.AioLock(context=context)
+
 
 class SemaphoreTest(BaseTest):
     def setUp(self):

@@ -34,3 +34,10 @@ class AioPool(metaclass=CoroBuilder):
     def coro_starmap(self, func, iterable, chunksize=None):
         return self.coro_func('starmap_async', func, iterable, 
                               chunksize=chunksize)
+
+    def __enter__(self):
+        self._obj.__enter__()
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self._obj.__exit__(*args, **kwargs)
