@@ -29,14 +29,14 @@ def func(queue, event, lock, items):
 @asyncio.coroutine
 def example(queue, event, lock):
     l = [1,2,3,4,5]
-    p = multiprocessing.Process(target=func, args=(queue, event, lock, l))
+    p = aioprocessing.AioProcess(target=func, args=(queue, event, lock, l))
     p.start()
     while True:
-        result = yield from queue.coro_get() # Non-blocking
+        result = yield from queue.coro_get()  # Non-blocking
         if result is None:
             break
         print("Got result {}".format(result))
-    p.join()
+    yield from p.coro_join()  # Non-blocking
 
 @asyncio.coroutine
 def example2(queue, event, lock):
@@ -77,10 +77,18 @@ existing `callback` and `error_callback` keyword arguments in the various
 `multiprocessing.Pool` is actually using threads internally, so the thread/fork
 mixing caveat still applies.
 
+Each `multiprocessing` class is replaced by an equivalent `aioprocessing` class,
+distinguished by the `Aio` prefix. So, `Pool` becomes `AioPool`, etc. All methods
+that could block on I/O also have a coroutine version that can be used with 
+`asyncio`. For example, `multiprocessing.Lock.acquire()` can be replaced with 
+`aioprocessing.AioLock.coro_acquire()`.
+
 What parts of `multiprocessing` are supported?
 ---------------------------------------------
 
-Most of them:
+Most of them! All methods that could do blocking I/O in the following objects
+have equivalent versions in `aioprocessing` that extend the `multiprocessing`
+versions by adding coroutine versions of all the blocking methods.
 
 - `Pool`
 - `Process`

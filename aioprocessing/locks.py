@@ -101,6 +101,12 @@ class AioBaseLock(metaclass=CoroBuilder):
             out.add_done_callback(lock_released)
         return out
 
+    def __enter__(self):
+        self._obj.__enter__()
+
+    def __exit__(self, *args, **kwargs):
+        self._obj.__exit__(*args, **kwargs)
+
     def __iter__(self):
         yield from self.coro_acquire()
         return _ContextManager(self)
