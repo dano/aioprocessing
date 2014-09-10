@@ -90,7 +90,7 @@ that could block on I/O also have a coroutine version that can be used with
 .. _asyncio.run_in_executor(): https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.BaseEventLoop.run_in_executor
 .. |threading.Thread| replace:: ``threading.Thread``
 .. _threading.Thread: https://docs.python.org/2/library/threading.html#thread-objects
-.. |Pool.*_async| replace: ``Pool.*_async``
+.. |Pool.*_async| replace:: ``Pool.*_async``
 .. _Pool.*_async: https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async
 
 What parts of `multiprocessing` are supported?
