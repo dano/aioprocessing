@@ -85,12 +85,19 @@ that could block on I/O also have a coroutine version that can be used with
 
 .. |multiprocessing| replace:: ``multiprocessing``
 .. _multiprocessing: https://docs.python.org/3/library/multiprocessing.html
+
+.. |asyncio| replace:: ``asyncio``
+.. _asyncio: https://docs.python.org/3/library/asyncio.html
+
 .. |ThreadPoolExecutor| replace:: ``ThreadPoolExecutor``
 .. _ThreadPoolExecutor: https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor
+
 .. |asyncio.run_in_executor()| replace:: ``asyncio.run_in_executor()``
 .. _asyncio.run_in_executor(): https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.BaseEventLoop.run_in_executor
+
 .. |threading.Thread| replace:: ``threading.Thread``
 .. _threading.Thread: https://docs.python.org/2/library/threading.html#thread-objects
+
 .. |Pool.*_async| replace:: ``Pool.*_async``
 .. _Pool.*_async: https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async
 
