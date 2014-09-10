@@ -1,9 +1,9 @@
 aioprocessing
 =============
 
-A Python 3.3+ library that integrates the `multiprocessing <https://docs.python.org/3/library/multiprocessing.html>`_ module with `asyncio <https://docs.python.org/3/library/asyncio.html>`_.
+A Python 3.3+ library that integrates the |multiprocessing|_ <https://docs.python.org/3/library/multiprocessing.html>`_ module with `asyncio <https://docs.python.org/3/library/asyncio.html>`_.
 
-Aioprocessing provides non-blocking coroutine versions of many blocking instance methods on objects in the `multiprocessing` library. Here's an example showing non-blocking usage of `Event`, `Queue`, and `Lock`:
+Aioprocessing provides non-blocking coroutine versions of many blocking instance methods on objects in the ``multiprocessing`` library. Here's an example showing non-blocking usage of ``Event``, ``Queue``, and ``Lock``:
 
 .. code-block:: python
     import time
@@ -100,22 +100,22 @@ Most of them! All methods that could do blocking I/O in the following objects
 have equivalent versions in `aioprocessing` that extend the `multiprocessing`
 versions by adding coroutine versions of all the blocking methods.
 
-- `Pool`
-- `Process`
-- `Lock`
-- `RLock`
-- `Semaphore`
-- `BoundedSemaphore`
-- `Event`
-- `Condition`
-- `Barrier`
-- `connection.Connection`
-- `connection.Listener`
-- `connection.Client`
-- `Queue`
-- `JoinableQueue`
-- `SimpleQueue`
-- All `managers.SyncManager` `Proxy` versions of the items above (`SyncManager.Queue`, `SyncManager.Lock()`, etc.).
+- ``Pool``
+- ``Process``
+- ``Lock``
+- `RLock``
+- ``Semaphore``
+- ``BoundedSemaphore``
+- ``Event``
+- ``Condition``
+- ``Barrier``
+- ``connection.Connection``
+- ``connection.Listener``
+- ``connection.Client``
+- ``Queue``
+- ``JoinableQueue``
+- ``SimpleQueue``
+- All ``managers.SyncManager`` ``Proxy`` versions of the items above (``SyncManager.Queue``, ``SyncManager.Lock()``, etc.).
 
 Note
 ----
