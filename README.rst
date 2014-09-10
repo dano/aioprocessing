@@ -111,7 +111,7 @@ versions by adding coroutine versions of all the blocking methods.
 - ``Pool``
 - ``Process``
 - ``Lock``
-- `RLock``
+- ``RLock``
 - ``Semaphore``
 - ``BoundedSemaphore``
 - ``Event``
