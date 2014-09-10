@@ -1,7 +1,7 @@
 aioprocessing
 =============
 
-``aioprocessing`` provides non-blocking, |asyncio|_ compatible, coroutine versions of many blocking instance methods on objects in the ``multiprocessing`` library. Here's an example showing non-blocking usage of ``Event``, ``Queue``, and ``Lock``:
+``aioprocessing`` provides non-blocking, |asyncio|_ compatible, coroutine versions of many blocking instance methods on objects in the |multiprocessing|_ library. Here's an example showing non-blocking usage of ``Event``, ``Queue``, and ``Lock``:
 
 .. code-block:: python
 
