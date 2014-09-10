@@ -1,4 +1,3 @@
-=============
 aioprocessing
 =============
 
@@ -67,7 +66,7 @@ non-blocking by executing the call in a |ThreadPoolExecutor|_, using
 |asyncio.run_in_executor()|_. 
 It does *not* re-implement multiprocessing using asynchronous I/O. This means 
 there is extra overhead added when you use ``aioprocessing`` objects instead of 
-`multiprocessing` objects, because each one is generally introducing at least 
+``multiprocessing`` objects, because each one is generally introducing at least 
 one |threading.Thread|_
 object, along with a ``ThreadPoolExecutor``. It also means that all the normal
 risks you get when you mix threads with fork apply here, too.
@@ -80,14 +79,12 @@ mixing caveat still applies.
 
 Each ``multiprocessing`` class is replaced by an equivalent ``aioprocessing`` class,
 distinguished by the ``Aio`` prefix. So, ``Pool`` becomes ``AioPool``, etc. All methods
-that could block on I/O also have a coroutine version that can be used with 
-``asyncio``. For example, ``multiprocessing.Lock.acquire()`` can be replaced with 
-``aioprocessing.AioLock.coro_acquire()``.
+that could block on I/O also have a coroutine version that can be used with ``asyncio``. For example, ``multiprocessing.Lock.acquire()`` can be replaced with ``aioprocessing.AioLock.coro_acquire()``.  
 
-.. |multiprocessing| replace:: ``multiprocessing``
-.. _multiprocessing: https://docs.python.org/3/library/multiprocessing.html
+.. |multiprocessing| replace:: ``multiprocessing`` 
+.. _multiprocessing: https://docs.python.org/3/library/multiprocessing.html 
 
-.. |asyncio| replace:: ``asyncio``
+.. |asyncio| replace:: ``asyncio`` 
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
 
 .. |ThreadPoolExecutor| replace:: ``ThreadPoolExecutor``
@@ -102,11 +99,11 @@ that could block on I/O also have a coroutine version that can be used with
 .. |Pool.*_async| replace:: ``Pool.*_async``
 .. _Pool.*_async: https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async
 
-What parts of `multiprocessing` are supported?
----------------------------------------------
+What parts of multiprocessing are supported?
+--------------------------------------------
 
 Most of them! All methods that could do blocking I/O in the following objects
-have equivalent versions in `aioprocessing` that extend the `multiprocessing`
+have equivalent versions in ``aioprocessing`` that extend the ``multiprocessing``
 versions by adding coroutine versions of all the blocking methods.
 
 - ``Pool``
