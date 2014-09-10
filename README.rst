@@ -60,7 +60,7 @@ Aioprocessing provides non-blocking coroutine versions of many blocking instance
 How does it work?
 -----------------
 
-In most cases, this library makes blocking calls to ``multiprocessing``_ methods
+In most cases, this library makes blocking calls to ``multiprocessing`` methods
 non-blocking by executing the call in a [`ThreadPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor), using
 [`asyncio.run_in_executor()`](https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.BaseEventLoop.run_in_executor). 
 It does *not* re-implement multiprocessing using asynchronous I/O. This means 
@@ -82,7 +82,7 @@ that could block on I/O also have a coroutine version that can be used with
 `asyncio`. For example, `multiprocessing.Lock.acquire()` can be replaced with 
 `aioprocessing.AioLock.coro_acquire()`.
 
-.. _``multiprocessing``: https://docs.python.org/3/library/multiprocessing.html
+.. _`multiprocessing`: https://docs.python.org/3/library/multiprocessing.html
 
 What parts of `multiprocessing` are supported?
 ---------------------------------------------
