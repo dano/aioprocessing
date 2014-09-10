@@ -82,7 +82,7 @@ that could block on I/O also have a coroutine version that can be used with
 `asyncio`. For example, `multiprocessing.Lock.acquire()` can be replaced with 
 `aioprocessing.AioLock.coro_acquire()`.
 
-.. |multiprocessing| replace:: ``multiprocessing`
+.. |multiprocessing| replace:: ``multiprocessing``
 .. _multiprocessing: https://docs.python.org/3/library/multiprocessing.html
 
 What parts of `multiprocessing` are supported?
