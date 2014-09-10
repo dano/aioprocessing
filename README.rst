@@ -61,8 +61,8 @@ How does it work?
 -----------------
 
 In most cases, this library makes blocking calls to |multiprocessing|_ methods
-non-blocking by executing the call in a [`ThreadPoolExecutor`](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor), using
-[`asyncio.run_in_executor()`](https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.BaseEventLoop.run_in_executor). 
+non-blocking by executing the call in a |ThreadPoolExecutor|, using
+|asyncio.run_in_executor()|. 
 It does *not* re-implement multiprocessing using asynchronous I/O. This means 
 there is extra overhead added when you use `aioprocessing` objects instead of 
 `multiprocessing` objects, because each one is generally introducing at least 
@@ -84,7 +84,10 @@ that could block on I/O also have a coroutine version that can be used with
 
 .. |multiprocessing| replace:: ``multiprocessing``
 .. _multiprocessing: https://docs.python.org/3/library/multiprocessing.html
-
+.. |ThreadPoolExecutor| replace:: ``ThreadPoolExecutor``
+.. _ThreadPoolExecutor: https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor
+.. |asyncio.run_in_executor()| replace:: ``asyncio.run_in_executor()``
+.. _asyncio.run_in_executor(): https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.BaseEventLoop.run_in_executor
 What parts of `multiprocessing` are supported?
 ---------------------------------------------
 
