@@ -10,7 +10,7 @@ __all__ = ["AioLock", "AioRLock", "AioBarrier", "AioCondition", "AioEvent",
 
 
 class _ContextManager:
-    """Context manager.
+    """ Context manager.
 
     This enables the following idiom for acquiring and releasing a
     lock around a block:
@@ -18,10 +18,6 @@ class _ContextManager:
         with (yield from lock):
             <block>
 
-    while failing loudly when accidentally using:
-
-        with lock:
-            <block>
     """
 
     def __init__(self, lock):
@@ -34,7 +30,7 @@ class _ContextManager:
 
     def __exit__(self, *args):
         try:
-            self._lock.release(choose_thread=True)
+            self._lock.release()
         finally:
             self._lock = None  # Crudely prevent reuse.
 
@@ -65,40 +61,19 @@ class AioBaseLock(metaclass=CoroBuilder):
     def __setstate__(self, state):
         super().__setstate__(state)
 
-    def release(self, choose_thread=False):
+    def release(self):
+        """ Release the lock.
+        
+        If the lock was acquired in the same process via
+        coro_acquire, we need to release the lock in the
+        ThreadPoolExecutor's thread.
+        
+        """
         if self._threaded_acquire:
-            if choose_thread:
-                out = self.run_in_thread(self._obj.release)
-            else:
-                raise RuntimeError(
-                    "A lock acquired via coro_acquire must be released "
-                    "via coro_release, or via release(choose_thread=True)"
-                    )
+            out = self.run_in_thread(self._obj.release)
         else:
             out = self._obj.release()
         self._threaded_acquire = False
-        return out
-
-    def coro_release(self, choose_thread=False):
-        def lock_released(fut):
-            self._threaded_acquire = False
-        if not self._threaded_acquire:
-            if choose_thread:
-                # Do a synchronous release, and wrap it in a future
-                # to simulate async behavior.
-                fut = asyncio.Future()
-                try:
-                    fut.set_result(self._obj.release())
-                except Exception as e:
-                    fut.set_exception(e)
-                out = fut
-                self._threaded_acquire = False
-            else:
-                raise RuntimeError("A lock acquired via acquire() "
-                                   "must be released via release().")
-        else:
-            out = self.run_in_executor(self._obj.release)
-            out.add_done_callback(lock_released)
         return out
 
     def __enter__(self):

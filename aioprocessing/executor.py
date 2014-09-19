@@ -17,7 +17,7 @@ class _AioExecutorMixin():
     """
     pool_workers = cpu_count()
 
-    def run_in_executor(self, callback, *args, **kwargs):
+    def run_in_executor(self, callback, *args, loop=None, **kwargs):
         """ Wraps run_in_executor so we can support kwargs.
         
         BaseEventLoop.run_in_executor does not support kwargs, so
@@ -27,7 +27,8 @@ class _AioExecutorMixin():
         if not hasattr(self, '_executor'):
             self._executor = self._get_executor()
 
-        return util.run_in_executor(self._executor, callback, *args, **kwargs)
+        return util.run_in_executor(self._executor, callback, *args, 
+                                    loop=loop, **kwargs)
 
     def run_in_thread(self, callback, *args, **kwargs):
         """ Runs a method in an executor thread.
@@ -157,7 +158,8 @@ class CoroBuilder(type):
 
     @staticmethod
     def coro_maker(func):
-        def coro_func(self, *args, **kwargs):
-            return self.run_in_executor(getattr(self, func), *args, **kwargs)
+        def coro_func(self, *args, loop=None, **kwargs):
+            return self.run_in_executor(getattr(self, func), *args, 
+                                        loop=loop, **kwargs)
         return coro_func
 

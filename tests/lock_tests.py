@@ -74,19 +74,6 @@ class LockTest(BaseTest):
         p.join()
         self.assertFalse(q.get())
 
-    def test_lock_consistency(self):
-        if self.type_ == MANAGER_TYPE:
-            self.skipTest("Not relevant for manager type")
-        @asyncio.coroutine
-        def do_lock():
-            yield from self.lock.coro_release()
-
-        def loop_run():
-            self.loop.run_until_complete(do_lock())
-
-        self.lock.acquire()
-        self.assertRaises(RuntimeError, loop_run)
-
     def test_lock_multiproc(self):
         e = Event()
 
@@ -143,38 +130,26 @@ class LockMixingTest(BaseTest):
         super().setUp()
         self.lock = aioprocessing.AioRLock()
 
-    def test_mix_sync_to_async(self):
+    def test_sync_lock(self):
         self.lock.acquire()
-
-        @asyncio.coroutine
-        def do_release(choose_thread=False):
-            yield from self.lock.coro_release(choose_thread=choose_thread)
-
-        self.assertRaises(RuntimeError,
-                          self.loop.run_until_complete, do_release())
-        self.loop.run_until_complete(do_release(choose_thread=True))
+        self.lock.release()
 
     def test_mix_async_to_sync(self):
         @asyncio.coroutine
         def do_acquire():
             yield from self.lock.coro_acquire()
 
-        self.loop.run_until_complete(do_acquire())
-        self.assertRaises(RuntimeError, self.lock.release)
-        self.lock.release(choose_thread=True)
+        self.lock.release()
 
     def test_mix_with_procs(self):
         @asyncio.coroutine
         def do_acquire():
             yield from self.lock.coro_acquire()
-        @asyncio.coroutine
-        def do_release(choose_thread=False):
-            yield from self.lock.coro_release(choose_thread=choose_thread)
         q = Queue()
         p = Process(target=mix_release, args=(self.lock, q))
         self.loop.run_until_complete(do_acquire())
         p.start()
-        self.loop.run_until_complete(do_release())
+        self.lock.release()
         out = q.get(timeout=5)
         p.join()
         self.assertTrue(isinstance(out, bool), out)
@@ -311,7 +286,7 @@ class ConditionTest(BaseTest):
         def wait_for_pred():
             yield from self.cond.coro_acquire()
             yield from self.cond.coro_wait_for(pred)
-            yield from self.cond.coro_release()
+            self.cond.release()
 
         p = Process(target=cond_notify, args=(self.cond, event))
         p.start()
