@@ -139,6 +139,8 @@ class LockMixingTest(BaseTest):
         def do_acquire():
             yield from self.lock.coro_acquire()
 
+        self.loop.run_until_complete(do_acquire())
+
         self.lock.release()
 
     def test_mix_with_procs(self):
@@ -184,7 +186,7 @@ class SemaphoreTest(BaseTest):
         self.assertReturnsIfImplemented(0, get_value, sem)
         self.assertEqual(sem.acquire(False), False)
         self.assertReturnsIfImplemented(0, get_value, sem)
-        self.assertEqual(sem.release(choose_thread=True), None)
+        self.assertEqual(sem.release(), None)
         self.assertReturnsIfImplemented(1, get_value, sem)
         self.assertEqual(sem.release(), None)
         self.assertReturnsIfImplemented(2, get_value, sem)
