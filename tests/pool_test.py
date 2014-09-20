@@ -4,7 +4,7 @@ import aioprocessing
 from multiprocessing import Event
 import time
 
-from ._base_test import BaseTest
+from ._base_test import BaseTest, _GenMixin
 
 def work_func(a, b):
     c = a * b
@@ -23,7 +23,7 @@ class GenAioPoolTest(BaseTest, _GenMixin):
         self.inst = self.Obj(1)
         self.initargs = (1,)
         self.meth = 'coro_map'
-        self.args = ([1,2,3])
+        self.args = (map_func, [1,2,3],)
 
 class PoolTest(BaseTest):
     def setUp(self):

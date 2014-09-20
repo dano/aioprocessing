@@ -3,10 +3,19 @@ import unittest
 import multiprocessing
 
 import aioprocessing
-from ._base_test import BaseTest
+from ._base_test import BaseTest, _GenMixin
 
 def f(q, a, b):
     q.put((a, b))
+
+def dummy():
+    pass
+
+class GenAioProcessTest(BaseTest, _GenMixin):
+    def setUp(self):
+        self.Obj = aioprocessing.AioProcess
+        self.inst = self.Obj(target=dummy)
+        self.meth = 'coro_join'
 
 class ProcessTest(BaseTest):
     def test_pickle_queue(self):
