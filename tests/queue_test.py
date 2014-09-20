@@ -4,7 +4,7 @@ import aioprocessing
 from multiprocessing import Process, Event
 from concurrent.futures import ProcessPoolExecutor
 
-from ._base_test import BaseTest
+from ._base_test import BaseTest, _GenMixin
 
 def queue_put(q, val):
     val = q.put(val)
@@ -15,6 +15,29 @@ def queue_get(q, e):
     e.set()
     q.put(val)
 
+class GenQueueMixin(_GenMixin):
+    def setUp(self):
+        super().setUp()
+        self.inst = self.Obj()
+        self.meth = 'coro_get'
+
+    def _after(self):
+        self.inst.put(1)
+
+class GenAioQueueTest(GenQueueMixin, BaseTest):
+    def setUp(self):
+        self.Obj = aioprocessing.AioQueue
+        super().setUp()
+
+class GenAioSimpleQueueTest(GenQueueMixin, BaseTest):
+    def setUp(self):
+        self.Obj = aioprocessing.AioSimpleQueue
+        super().setUp()
+
+class GenAioJoinableQueueTest(GenQueueMixin, BaseTest):
+    def setUp(self):
+        self.Obj = aioprocessing.AioJoinableQueue
+        super().setUp()
 
 class QueueTest(BaseTest):
     def test_blocking_put(self):

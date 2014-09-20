@@ -6,7 +6,7 @@ import traceback
 import aioprocessing
 from multiprocessing import Process, Event, Queue, get_context
 
-from ._base_test import BaseTest
+from ._base_test import BaseTest, _GenMixin
 
 MANAGER_TYPE = 1
 STANDARD_TYPE = 2
@@ -35,6 +35,68 @@ def sync_lock(lock, event, event2, queue):
     event.set()
     lock.acquire()
     lock.release()
+
+class GenAioLockTest(BaseTest, _GenMixin):
+    def setUp(self):
+        super().setUp()
+        self.Obj = aioprocessing.AioLock
+        self.inst = self.Obj()
+        self.meth = 'coro_acquire'
+
+class GenAioRLockTest(BaseTest, _GenMixin):
+    def setUp(self):
+        super().setUp()
+        self.Obj = aioprocessing.AioRLock
+        self.inst = self.Obj()
+        self.meth = 'coro_acquire'
+
+class GenAioConditionTest(BaseTest, _GenMixin):
+    def setUp(self):
+        super().setUp()
+        self.Obj = aioprocessing.AioCondition
+        self.inst = self.Obj()
+        self.meth = 'coro_acquire'
+
+class GenAioSemaphoreTest(BaseTest, _GenMixin):
+    def setUp(self):
+        super().setUp()
+        self.Obj = aioprocessing.AioSemaphore
+        self.inst = self.Obj()
+        self.meth = 'coro_acquire'
+
+class GenAioEventTest(BaseTest, _GenMixin):
+    def setUp(self):
+        super().setUp()
+        self.Obj = aioprocessing.AioEvent
+        self.inst = self.Obj()
+        self.meth = 'coro_wait'
+
+    def _after(self):
+        self.inst.set()
+
+class GenAioBarrierTest(BaseTest, _GenMixin):
+    def setUp(self):
+        super().setUp()
+        self.Obj = aioprocessing.AioBarrier
+        self.inst = self.Obj(1)
+        self.initargs = (1,)
+        self.meth = 'coro_wait'
+
+class LoopLockTest(BaseTest):
+    def setUp(self):
+        pass
+
+    def test_lock_with_loop(self):
+        loop = asyncio.new_event_loop()
+        lock = aioprocessing.AioLock()
+
+        @asyncio.coroutine
+        def do_async_lock():
+            yield from lock.coro_acquire(loop=loop)
+
+        loop.run_until_complete(do_async_lock())
+
+
 
 class LockTest(BaseTest):
     def setUp(self):
