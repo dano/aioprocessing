@@ -16,6 +16,14 @@ def map_func(z):
 def starmap(func, it):
     return map(func, *zip(*it))
 
+class GenAioPoolTest(BaseTest, _GenMixin):
+    def setUp(self):
+        super().setUp()
+        self.Obj = aioprocessing.AioPool
+        self.inst = self.Obj(1)
+        self.initargs = (1,)
+        self.meth = 'coro_map'
+        self.args = ([1,2,3])
 
 class PoolTest(BaseTest):
     def setUp(self):
