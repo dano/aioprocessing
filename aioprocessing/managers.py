@@ -21,8 +21,9 @@ AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
 class _AioProxyMixin(_AioExecutorMixin):
     _obj = None
 
-    def _async_call(self, method, *args, **kwargs):
-        return asyncio.async(self.run_in_executor(self._callmethod, method, args, kwargs))
+    def _async_call(self, method, *args, loop=None, **kwargs):
+        return asyncio.async(self.run_in_executor(self._callmethod, method, 
+                                                  args, kwargs, loop=loop))
 
 
 class ProxyCoroBuilder(type):
@@ -38,8 +39,9 @@ class ProxyCoroBuilder(type):
 
     @staticmethod
     def coro_maker(func):
-        def coro_func(self, *args, **kwargs):
-            return asyncio.async(self._async_call(func, *args, **kwargs))
+        def coro_func(self, *args, loop=None, **kwargs):
+            return self._async_call(func, *args, loop=loop, 
+                                    **kwargs)
         return coro_func
 
 
