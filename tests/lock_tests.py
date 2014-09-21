@@ -43,6 +43,15 @@ class GenAioLockTest(BaseTest, _GenMixin):
         self.inst = self.Obj()
         self.meth = 'coro_acquire'
 
+class GenAioManagerLockTest(GenAioLockTest):
+    def setUp(self):
+        super().setUp()
+        self.manager = aioprocessing.AioManager()
+        self.Obj = self.manager.AioLock
+        self.inst = self.Obj()
+
+    def test_ctx(self): pass
+
 class GenAioRLockTest(BaseTest, _GenMixin):
     def setUp(self):
         super().setUp()
