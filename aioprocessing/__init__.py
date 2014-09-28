@@ -12,6 +12,12 @@ version_info = (0, 0, 1)
 
 def AioProcess(group=None, target=None, name=None,
                args=(), kwargs = {}, *, daemon=None, context=None):
+    """ Returns an asyncio-friendly version of multiprocessing.Process. 
+    
+    Provides the following coroutines:
+    coro_join()
+    
+    """
     context = context if context else multiprocessing.get_context()
     from .process import AioProcess
     return AioProcess(group=group, target=target, name=name, args=args,
@@ -19,6 +25,15 @@ def AioProcess(group=None, target=None, name=None,
 
 def AioPool(processes=None, initializer=None, initargs=(),
             maxtasksperchild=None, *, context=None):
+    """ Returns an asyncio-friendly version of multiprocessing.Pool. 
+    
+    Provides the following coroutines:
+    coro_join()
+    coro_apply()
+    coro_map()
+    coro_starmap()
+    
+    """
     context = context if context else multiprocessing.get_context()
     from .pool import AioPool
     return AioPool(processes=processes, initializer=initializer, 
@@ -26,7 +41,20 @@ def AioPool(processes=None, initializer=None, initargs=(),
                    ctx=context)
 
 def AioManager(*, context=None):
-    """ Starts and returns an asyncio-friendly mp.SyncManager. """
+    """ Starts and returns an asyncio-friendly mp.SyncManager. 
+    
+    Provides the follow asyncio-friendly objects:
+
+    AioQueue
+    AioBarrier
+    AioBoundedSemaphore
+    AioCondition
+    AioEvent
+    AioLock
+    AioRLock
+    AioSemaphore
+    
+    """
     context = context if context else multiprocessing.get_context()
     from .managers import AioSyncManager
     m = AioSyncManager(ctx=context)
@@ -34,6 +62,7 @@ def AioManager(*, context=None):
     return m
 
 def AioPipe(duplex=True):
+    """ Returns a pair of AioConnection objects. """
     from .connection import AioConnection
     conn1, conn2 = multiprocessing.Pipe(duplex=duplex)
     # Transform the returned connection instances into
@@ -120,5 +149,4 @@ def AioBarrier(parties, action=None, timeout=None, *, context=None):
     context = context = context if context else multiprocessing.get_context()
     from .locks import AioBarrier
     return AioBarrier(parties, action, timeout, ctx=context)
-
 

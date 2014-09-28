@@ -78,7 +78,10 @@ class AioConditionProxy(ConditionProxy, metaclass=ProxyCoroBuilder):
 
 class AioSyncManager(SyncManager):
     """ A mp.Manager that provides asyncio-friendly objects. """
+    #TODO implement get_server()
     pass
+
+#TODO implement AioServer
 
 AioSyncManager.register("AioQueue", Queue, AioQueueProxy)
 AioSyncManager.register("AioBarrier", Barrier, AioQueueProxy)

@@ -45,6 +45,15 @@ class AioBaseLock(metaclass=CoroBuilder):
         register_after_fork(self, _after_fork)
 
     def coro_acquire(self, *args, **kwargs):
+        """ Non-blocking acquire.
+        
+        We need a custom implementation here, because we need to
+        set the _threaded_acquire attribute to True once we have
+        the lock. This attribute is used by release() to determine
+        whether the lock should be released in the main thread,
+        or in the Executor thread.
+        
+        """
         def lock_acquired(fut):
             if fut.result():
                 self._threaded_acquire = True
@@ -77,10 +86,10 @@ class AioBaseLock(metaclass=CoroBuilder):
         return out
 
     def __enter__(self):
-        self._obj.__enter__()
+        return self._obj.__enter__()
 
     def __exit__(self, *args, **kwargs):
-        self._obj.__exit__(*args, **kwargs)
+        return self._obj.__exit__(*args, **kwargs)
 
     def __iter__(self):
         yield from self.coro_acquire()
