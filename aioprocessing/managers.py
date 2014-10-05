@@ -52,36 +52,30 @@ class AioQueueProxy(AioBaseQueueProxy, metaclass=ProxyCoroBuilder):
     proxy.
     
     """
-    #delegate = AioBaseQueueProxy
     coroutines = ['get', 'put']
 
 
 class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
-    #delegate = AcquirerProxy
     coroutines = ['acquire', 'release']
 
 
 class AioBarrierProxy(BarrierProxy, metaclass=ProxyCoroBuilder):
-    #delegate = BarrierProxy
     coroutines = ['wait']
 
 
 class AioEventProxy(EventProxy, metaclass=ProxyCoroBuilder):
-    #delegate = EventProxy
     coroutines = ['wait']
 
 
 class AioConditionProxy(ConditionProxy, metaclass=ProxyCoroBuilder):
-    #delegate = ConditionProxy
     coroutines = ['wait', 'wait_for']
 
 
 class AioSyncManager(SyncManager):
     """ A mp.Manager that provides asyncio-friendly objects. """
-    #TODO implement get_server()
     pass
 
-#TODO implement AioServer
+
 
 AioSyncManager.register("AioQueue", Queue, AioQueueProxy)
 AioSyncManager.register("AioBarrier", Barrier, AioQueueProxy)

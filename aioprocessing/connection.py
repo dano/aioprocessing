@@ -13,6 +13,11 @@ class AioConnection(metaclass=CoroBuilder):
                   'recv_bytes_into', 'send']
 
     def __init__(self, obj):
+        """ Initialize the AioConnection.
+        
+        obj - a multiprocessing.Connection object.
+        
+        """
         super().__init__()
         self._obj = obj
 
@@ -25,8 +30,10 @@ class AioConnection(metaclass=CoroBuilder):
 
 
 def AioClient(*args, **kwargs):
+    """ Returns an AioConnection instance. """
     conn = Client(*args, **kwargs)
     return AioConnection(conn)
+
 
 class AioListener(metaclass=CoroBuilder):
     delegate = Listener
@@ -43,6 +50,7 @@ class AioListener(metaclass=CoroBuilder):
     def __exit__(self, *args, **kwargs):
         self._obj.__exit__(*args, **kwargs)
 
+
 def coro_deliver_challenge(*args, **kwargs):
     executor = ThreadPoolExecutor(max_workers=1)
     return run_in_executor(executor, deliver_challenge, *args, **kwargs)
@@ -50,7 +58,6 @@ def coro_deliver_challenge(*args, **kwargs):
 def coro_answer_challenge(*args, **kwargs):
     executor = ThreadPoolExecutor(max_workers=1)
     return run_in_executor(executor, answer_challenge, *args, **kwargs)
-
 
 def coro_wait(*args, **kwargs):
     executor = ThreadPoolExecutor(max_workers=1)
