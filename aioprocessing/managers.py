@@ -76,7 +76,6 @@ class AioSyncManager(SyncManager):
     pass
 
 
-
 AioSyncManager.register("AioQueue", Queue, AioQueueProxy)
 AioSyncManager.register("AioBarrier", Barrier, AioQueueProxy)
 AioSyncManager.register("AioBoundedSemaphore", BoundedSemaphore, AioAcquirerProxy)
