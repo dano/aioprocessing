@@ -9,7 +9,7 @@ from multiprocessing.managers import (SyncManager, BaseProxy, MakeProxyType,
 
 from . import queues
 from . import util
-from .executor import _AioExecutorMixin, CoroBuilder
+from .executor import _ExecutorMixin, CoroBuilder
 
 
 AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
@@ -18,7 +18,7 @@ AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
     ))
 
 
-class _AioProxyMixin(_AioExecutorMixin):
+class _AioProxyMixin(_ExecutorMixin):
     _obj = None
 
     def _async_call(self, method, *args, loop=None, **kwargs):

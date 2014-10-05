@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from . import util
 
 
-class _AioExecutorMixin():
+class _ExecutorMixin():
     """ A Mixin that provides asynchronous functionality.
     
     This mixin provides methods that allow a class to run
@@ -66,11 +66,25 @@ class CoroBuilder(type):
     """ Metaclass for adding coroutines to a class.
     
     This metaclass has two main roles:
-    1) Make _AioExecutorMixin a parent of the given class
+    1) Make _ExecutorMixin a parent of the given class
     2) For every function name listed in the class attribute "coroutines",
        add a new instance method to the class called "coro_<func_name>",
        which is an asyncio.coroutine that calls func_name in a
        ThreadPoolExecutor.
+
+    Each wrapper class that uses this metaclass can define three class
+    methods that will influence the behavior of the metaclass:
+    coroutines - A list of methods that should get coroutine versions
+                 in the wrapper. For example:
+                 coroutines = ['acquire', 'wait']
+                 Will mean the class gets coro_acquire and coro_wait methods.
+    delegate - The class object that is being wrapped. This object will
+               be instantiated when the wrapper class is instantiated, and
+               will be set to the `_obj` attribute of the instance.
+    pool_workers - The number of workers in the ThreadPoolExecutor internally
+                   used by the wrapper class. This defaults to cpu_count(),
+                   but for classes that need to acquire locks, it should
+                   always be set to 1.
     
     """
     def __new__(cls, clsname, bases, dct, **kwargs):
@@ -91,9 +105,9 @@ class CoroBuilder(type):
             coro_list.extend(b_dct.get('coroutines', []))
             find_existing_coros(b_dct)
 
-        # Add _AioExecutorMixin to bases.
-        if _AioExecutorMixin not in bases:
-            bases += (_AioExecutorMixin,)
+        # Add _ExecutorMixin to bases.
+        if _ExecutorMixin not in bases:
+            bases += (_ExecutorMixin,)
 
         # Add coro funcs to dct, but only if a definition
         # is not already provided by dct or one of our bases.
@@ -105,7 +119,7 @@ class CoroBuilder(type):
         return super().__new__(cls, clsname, bases, dct)
 
     def __init__(cls, name, bases, dct):
-        """ Properly initialize a coroutine wrapper.
+        """ Properly initialize a coroutine wrapper class.
         
         Sets pool_workers and delegate on the class, and also
         adds an __init__ method to it that instantiates the
@@ -117,7 +131,7 @@ class CoroBuilder(type):
         delegate = dct.get('delegate')
         old_init = dct.get('__init__')
         # Search bases for values we care about, if we didn't
-        # find them on the child class.
+        # find them on the current class.
         for b in bases:
             b_dct = b.__dict__
             if not pool_workers:
@@ -130,7 +144,7 @@ class CoroBuilder(type):
         cls.delegate = delegate
 
         # If we found a value for pool_workers, set it. If not,
-        # AioExecutorMixin sets a default that will be used.
+        # ExecutorMixin sets a default that will be used.
         if pool_workers:
             cls.pool_workers = pool_workers
 

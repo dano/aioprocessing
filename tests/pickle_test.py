@@ -1,11 +1,11 @@
 import pickle
 import unittest
-from aioprocessing.executor import _AioExecutorMixin
+from aioprocessing.executor import _ExecutorMixin
 
 
 class PickleTest(unittest.TestCase):
     def test_pickle_queue(self):
-        q = _AioExecutorMixin()
+        q = _ExecutorMixin()
         q.test = "abc"
         pickled = pickle.dumps(q)
         unpickled = pickle.loads(pickled)
