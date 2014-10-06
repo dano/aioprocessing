@@ -50,8 +50,8 @@ class ListenerTest(BaseTest):
         event = multiprocessing.Event()
         p = Process(target=client_sendback, args=(event, address, authkey))
         p.start()
+        listener = AioListener(address, authkey=authkey)
         try:
-            listener = AioListener(address, authkey=authkey)
             event.set()
             conn = listener.accept()
             self.assertIsInstance(conn, AioConnection)
@@ -108,12 +108,12 @@ class ListenerTest(BaseTest):
         authkey = b'abcdefg'
         event = multiprocessing.Event()
         p = Process(target=listener_sendback, args=(event, address, authkey))
-        p.daemon= True
+        p.daemon = True
         p.start()
         event.wait()
         with AioClient(address, authkey=authkey) as conn:
             self.assertIsInstance(conn, AioConnection)
-        self.assertRaises(OSError, lambda: conn.send("hi"))
+        self.assertRaises(OSError, conn.send, "hi")
         p.terminate()
         p.join()
 
