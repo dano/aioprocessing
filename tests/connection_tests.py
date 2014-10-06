@@ -117,9 +117,5 @@ class ListenerTest(BaseTest):
         p.terminate()
         p.join()
 
-
-
-
-
 if __name__ == "__main__":
     unittest.main()
