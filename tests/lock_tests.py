@@ -4,7 +4,7 @@ import asyncio
 import unittest
 import traceback
 import aioprocessing
-from multiprocessing import Process, Event, Queue, get_context
+from multiprocessing import Process, Event, Queue, get_context, get_all_start_methods
 
 from ._base_test import BaseTest, _GenMixin
 
@@ -132,6 +132,7 @@ class LockTest(BaseTest):
         event = Event()
         event2 = Event()
         q = Queue()
+		
         @asyncio.coroutine
         def with_lock():
             with (yield from self.lock):
@@ -233,11 +234,12 @@ class SpawnLockMixingTest(LockMixingTest):
         context = get_context('spawn')
         self.lock = aioprocessing.AioLock(context=context)
 
-class ForkServerLockMixingTest(LockMixingTest):
-    def setUp(self):
-        super().setUp()
-        context = get_context('forkserver')
-        self.lock = aioprocessing.AioLock(context=context)
+if 'forkserver' in get_all_start_methods():
+	class ForkServerLockMixingTest(LockMixingTest):
+		def setUp(self):
+			super().setUp()
+			context = get_context('forkserver')
+			self.lock = aioprocessing.AioLock(context=context)
 
 
 class SemaphoreTest(BaseTest):

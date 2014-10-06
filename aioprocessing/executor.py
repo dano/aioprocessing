@@ -53,7 +53,7 @@ class _ExecutorMixin():
         raise AttributeError(attr)
 
     def __getstate__(self):
-        self_dict = self.__dict__
+        self_dict = self.__dict__.copy()
         self_dict['_executor'] = None
         return self_dict
 
