@@ -1,7 +1,10 @@
 aioprocessing
 =============
 
-``aioprocessing`` provides non-blocking, |asyncio|_ compatible, coroutine versions of many blocking instance methods on objects in the |multiprocessing|_ library. Here's an example showing non-blocking usage of ``Event``, ``Queue``, and ``Lock``:
+``aioprocessing`` provides asynchronous, |asyncio|_ compatible, coroutine 
+versions of many blocking instance methods on objects in the |multiprocessing|_ 
+library. Here's an example demonstrating the ``aioprocessing`` versions of 
+``Event``, ``Queue``, and ``Lock``:
 
 .. code-block:: python
 
@@ -15,7 +18,8 @@ aioprocessing
         """ Demo worker function.
 
         This worker function runs in its own process, and uses
-        normal blocking calls to aioprocessing objects.
+        normal blocking calls to aioprocessing objects, exactly 
+        the way you would use oridinary multiprocessing objects.
 
         """
         with lock:
@@ -31,18 +35,18 @@ aioprocessing
         p = aioprocessing.AioProcess(target=func, args=(queue, event, lock, l))
         p.start()
         while True:
-            result = yield from queue.coro_get()  # Non-blocking
+            result = yield from queue.coro_get()
             if result is None:
                 break
             print("Got result {}".format(result))
-        yield from p.coro_join()  # Non-blocking
+        yield from p.coro_join()
 
     @asyncio.coroutine
     def example2(queue, event, lock):
-        yield from event.coro_wait()  # Non-blocking
-        with (yield from lock):  # Non-blocking
+        yield from event.coro_wait()
+        with (yield from lock):
             yield from queue.coro_put(78)
-            yield from queue.coro_put(None) # Shut it down
+            yield from queue.coro_put(None) # Shut down the worker
 
     if __name__ == "__main__":
         loop = asyncio.get_event_loop()
@@ -56,18 +60,23 @@ aioprocessing
         loop.run_until_complete(asyncio.wait(tasks))
         loop.close()
 
+The aioprocessing objects can be used just like their multiprocessing
+equivalents, as they are in ``func`` above, but they
+can also be seamlessly used inside of ``asyncio`` coroutines, without
+ever blocking the event loop.
+
+
 How does it work?
 -----------------
 
 In most cases, this library makes blocking calls to |multiprocessing|_ methods
-non-blocking by executing the call in a |ThreadPoolExecutor|_, using
+asynchronous by executing the call in a |ThreadPoolExecutor|_, using
 |asyncio.run_in_executor()|_. 
 It does *not* re-implement multiprocessing using asynchronous I/O. This means 
 there is extra overhead added when you use ``aioprocessing`` objects instead of 
-``multiprocessing`` objects, because each one is generally introducing at least 
-one |threading.Thread|_
-object, along with a ``ThreadPoolExecutor``. It also means that all the normal
-risks you get when you mix threads with fork apply here, too.
+``multiprocessing`` objects, because each one is generally introducing a
+``ThreadPoolExecutor`` containing at least one |threading.Thread|_. It also means 
+that all the normal risks you get when you mix threads with fork apply here, too.
 
 The one exception to this is ``aioprocessing.AioPool``, which makes use of the 
 existing ``callback`` and ``error_callback`` keyword arguments in the various 
@@ -106,6 +115,7 @@ versions by adding coroutine versions of all the blocking methods.
 
 - ``Pool``
 - ``Process``
+- ``Pipe``
 - ``Lock``
 - ``RLock``
 - ``Semaphore``
