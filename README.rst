@@ -61,9 +61,9 @@ library. Here's an example demonstrating the ``aioprocessing`` versions of
         loop.close()
 
 The aioprocessing objects can be used just like their multiprocessing
-equivalents, as they are in ``func`` above, but they
-can also be seamlessly used inside of ``asyncio`` coroutines, without
-ever blocking the event loop.
+equivalents - as they are in ``func`` above - but they can also be 
+seamlessly used inside of ``asyncio`` coroutines, without ever blocking
+the event loop.
 
 
 How does it work?
