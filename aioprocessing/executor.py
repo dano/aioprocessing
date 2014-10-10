@@ -73,7 +73,7 @@ class CoroBuilder(type):
        ThreadPoolExecutor.
 
     Each wrapper class that uses this metaclass can define three class
-    methods that will influence the behavior of the metaclass:
+    attributes that will influence the behavior of the metaclass:
     coroutines - A list of methods that should get coroutine versions
                  in the wrapper. For example:
                  coroutines = ['acquire', 'wait']
