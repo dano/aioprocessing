@@ -5,6 +5,14 @@ from concurrent.futures import ThreadPoolExecutor
 from . import util
 
 
+def init_executor(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not hasattr(self, '_executor'):
+            self._executor = self._get_executor()
+        return func(self, *args, **kwargs)
+    return wrapper
+
 class _ExecutorMixin():
     """ A Mixin that provides asynchronous functionality.
     
@@ -17,6 +25,7 @@ class _ExecutorMixin():
     """
     pool_workers = cpu_count()
 
+    @init_executor
     def run_in_executor(self, callback, *args, loop=None, **kwargs):
         """ Wraps run_in_executor so we can support kwargs.
         
@@ -24,12 +33,10 @@ class _ExecutorMixin():
         we wrap our callback in a lambda if kwargs are provided.
         
         """
-        if not hasattr(self, '_executor'):
-            self._executor = self._get_executor()
-
         return util.run_in_executor(self._executor, callback, *args, 
                                     loop=loop, **kwargs)
 
+    @init_executor
     def run_in_thread(self, callback, *args, **kwargs):
         """ Runs a method in an executor thread.
         
@@ -38,8 +45,6 @@ class _ExecutorMixin():
         acquired), but should be run in a blocking way.
         
         """
-        if not hasattr(self, '_executor'):
-            self._executor = self._get_executor()
         fut = self._executor.submit(callback, *args, **kwargs)
         return fut.result()
 
