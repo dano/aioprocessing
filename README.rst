@@ -76,7 +76,8 @@ It does *not* re-implement multiprocessing using asynchronous I/O. This means
 there is extra overhead added when you use ``aioprocessing`` objects instead of 
 ``multiprocessing`` objects, because each one is generally introducing a
 ``ThreadPoolExecutor`` containing at least one |threading.Thread|_. It also means 
-that all the normal risks you get when you mix threads with fork apply here, too.
+that all the normal risks you get when you mix threads with fork apply here, too 
+(See http://bugs.python.org/issue6721 for more info).
 
 The one exception to this is ``aioprocessing.AioPool``, which makes use of the 
 existing ``callback`` and ``error_callback`` keyword arguments in the various 
@@ -87,6 +88,10 @@ mixing caveat still applies.
 Each ``multiprocessing`` class is replaced by an equivalent ``aioprocessing`` class,
 distinguished by the ``Aio`` prefix. So, ``Pool`` becomes ``AioPool``, etc. All methods
 that could block on I/O also have a coroutine version that can be used with ``asyncio``. For example, ``multiprocessing.Lock.acquire()`` can be replaced with ``aioprocessing.AioLock.coro_acquire()``.  
+
+Note that you can also use the `aioprocessing` synchronization primitives as replacements 
+for their equivalent `threading` primitives, in single-process, multi-threaded programs 
+that use `asyncio`.
 
 .. |multiprocessing| replace:: ``multiprocessing`` 
 .. _multiprocessing: https://docs.python.org/3/library/multiprocessing.html 
