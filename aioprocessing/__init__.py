@@ -7,8 +7,15 @@ __all__ = ['AioProcess', 'AioManager', 'AioPipe', 'AioQueue', 'AioSimpleQueue',
            'AioJoinableQueue', 'AioLock', 'AioRLock', 'AioCondition', 'AioPool',
            'AioSemaphore', 'AioBoundedSemaphore', 'AioEvent', 'AioBarrier']
 
-version = "0.0.1"
-version_info = (0, 0, 1)
+# version is a human-readable version number.
+
+# version_info is a four-tuple for programmatic comparison. The first
+# three numbers are the components of the version number.  The fourth
+# is zero for an official release, positive for a development branch,
+# or negative for a release candidate or beta (after the base version
+# number has been incremented)
+version = "0.0.2dev1"
+version_info = (0, 0, 2, -100)
 
 def AioProcess(group=None, target=None, name=None,
                args=(), kwargs = {}, *, daemon=None, context=None):
