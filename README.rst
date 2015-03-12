@@ -141,7 +141,9 @@ What versions of Python are compatible?
 ---------------------------------------
 
 `aioprocessing` will work out of the box on Python 3.4+, and will also work with Python
-3.3 if you install the [PyPI version](https://pypi.python.org/pypi/asyncio) of `asyncio`.
+3.3 if you install the `PyPI version`_ of `asyncio`.
+
+.. _PyPI version: https://pypi.python.org/pypi/asyncio
 
 Note
 ----
