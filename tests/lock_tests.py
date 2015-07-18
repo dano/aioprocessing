@@ -4,7 +4,11 @@ import asyncio
 import unittest
 import traceback
 import aioprocessing
-from multiprocessing import Process, Event, Queue, get_context, get_all_start_methods
+from multiprocessing import Process, Event, Queue, get_all_start_methods
+try:
+    from multiprocessing import get_context
+except ImportError:
+    get_context = lambda x: None
 
 from ._base_test import BaseTest, _GenMixin
 
@@ -50,6 +54,7 @@ class GenAioManagerLockTest(GenAioLockTest):
         self.Obj = self.manager.AioLock
         self.inst = self.Obj()
 
+    @unittest.skipIf(not hasattr(multiprocessing, 'get_context'))
     def test_ctx(self): pass
 
 class GenAioRLockTest(BaseTest, _GenMixin):

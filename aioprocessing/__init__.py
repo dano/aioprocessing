@@ -17,6 +17,15 @@ __all__ = ['AioProcess', 'AioManager', 'AioPipe', 'AioQueue', 'AioSimpleQueue',
 version = "0.0.2dev1"
 version_info = (0, 0, 2, -100)
 
+if hasattr(multiprocessing, 'get_context'):
+    def _get_context():
+        return multiprocessing.get_context()
+    has_context = True
+else:
+    def _get_context():
+        return None
+    has_context = False
+
 def AioProcess(group=None, target=None, name=None,
                args=(), kwargs = {}, *, daemon=None, context=None):
     """ Returns an asyncio-friendly version of multiprocessing.Process. 
@@ -25,7 +34,7 @@ def AioProcess(group=None, target=None, name=None,
     coro_join()
     
     """
-    context = context if context else multiprocessing.get_context()
+    context = context if context else _get_context()
     from .process import AioProcess
     return AioProcess(group=group, target=target, name=name, args=args,
                       kwargs=kwargs, daemon=daemon, ctx=context)
@@ -41,7 +50,7 @@ def AioPool(processes=None, initializer=None, initargs=(),
     coro_starmap()
     
     """
-    context = context if context else multiprocessing.get_context()
+    context = context if context else _get_context()
     from .pool import AioPool
     return AioPool(processes=processes, initializer=initializer, 
                    initargs=initargs, maxtasksperchild=maxtasksperchild,
@@ -62,9 +71,11 @@ def AioManager(*, context=None):
     AioSemaphore
     
     """
-    context = context if context else multiprocessing.get_context()
+    context = context if context else _get_context()
     from .managers import AioSyncManager
-    m = AioSyncManager(ctx=context)
+    # For Python 3.3 support, don't always pass ctx.
+    kwargs = {'ctx' : context} if has_context else {}
+    m = AioSyncManager(**kwargs)
     m.start()
     return m
 
@@ -87,7 +98,7 @@ def AioQueue(maxsize=0, *, context=None):
     is not provided, the default for the platform will be used.
     
     """
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .queues import AioQueue
     return AioQueue(maxsize, ctx=context)
 
@@ -98,7 +109,7 @@ def AioJoinableQueue(maxsize=0, *, context=None):
     is not provided, the default for the platform will be used.
     
     """
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .queues import AioJoinableQueue
     return AioJoinableQueue(maxsize, ctx=context)
 
@@ -109,7 +120,7 @@ def AioSimpleQueue(*, context=None):
     is not provided, the default for the platform will be used.
     
     """
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .queues import AioSimpleQueue
     return AioSimpleQueue(ctx=context)
 
@@ -117,43 +128,43 @@ def AioSimpleQueue(*, context=None):
 
 def AioLock(*, context=None):
     '''Returns a non-recursive lock object'''
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .locks import AioLock
     return AioLock(ctx=context)
 
 def AioRLock(*, context=None):
     '''Returns a recursive lock object'''
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .locks import AioRLock
     return AioRLock(ctx=context)
 
 def AioCondition(lock=None, *, context=None):
     '''Returns a condition object'''
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .locks import AioCondition
     return AioCondition(lock, ctx=context)
 
 def AioSemaphore(value=1, *, context=None):
     '''Returns a semaphore object'''
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .locks import AioSemaphore
     return AioSemaphore(value, ctx=context)
 
 def AioBoundedSemaphore(value=1, *, context=None):
     '''Returns a bounded semaphore object'''
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .locks import AioBoundedSemaphore
     return AioBoundedSemaphore(value, ctx=context)
 
 def AioEvent(*, context=None):
     '''Returns an event object'''
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .locks import AioEvent
     return AioEvent(ctx=context)
 
 def AioBarrier(parties, action=None, timeout=None, *, context=None):
     '''Returns a barrier object'''
-    context = context = context if context else multiprocessing.get_context()
+    context = context = context if context else _get_context()
     from .locks import AioBarrier
     return AioBarrier(parties, action, timeout, ctx=context)
 

@@ -166,13 +166,13 @@ class CoroBuilder(type):
             # If a context was specified, we instaniate the mp class
             # using that context. Otherwise, we'll just use the default
             # context.
-            if self.delegate:
+            if cls.delegate:
                 ctx = kwargs.pop('ctx', None)
                 if ctx:
-                    cls = getattr(ctx, self.delegate.__name__)
+                    clz = getattr(ctx, cls.delegate.__name__)
                 else:
-                    cls = self.delegate
-                self._obj = cls(*args, **kwargs)
+                    clz = cls.delegate
+                self._obj = clz(*args, **kwargs)
         cls.__init__ = init_func
 
     @staticmethod
