@@ -52,6 +52,8 @@ class _ExecutorMixin():
         return ThreadPoolExecutor(max_workers=self.pool_workers)
 
     def __getattr__(self, attr):
+        assert attr is not '_obj', 'Make sure that your Class has a ' \
+                                   '"delegate" assigned'
         if (self._obj and hasattr(self._obj, attr) and
             not attr.startswith("__")):
             return getattr(self._obj, attr)
