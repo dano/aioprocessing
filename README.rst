@@ -1,5 +1,7 @@
 aioprocessing
 =============
+.. image:: https://travis-ci.org/dano/aioprocessing.svg?branch=master
+
 
 ``aioprocessing`` provides asynchronous, |asyncio|_ compatible, coroutine 
 versions of many blocking instance methods on objects in the |multiprocessing|_ 
@@ -144,8 +146,3 @@ What versions of Python are compatible?
 3.3 if you install the `PyPI version`_ of `asyncio`.
 
 .. _PyPI version: https://pypi.python.org/pypi/asyncio
-
-Note
-----
-
-This project is currently in alpha stages, and likely has bugs. Use at your own risk. (I do appreciate bug reports, though :).
