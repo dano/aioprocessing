@@ -62,6 +62,17 @@ library. Here's an example demonstrating the `aioprocessing` versions of
         loop.close()
 ```
 
+Python 3.5 syntax is supported, too. This means the `example2` function above 
+could look like this:
+
+```python
+    async def example2(queue, event, lock):
+        await event.coro_wait()
+        async with lock:
+            await queue.coro_put(78)
+            await queue.coro_put(None) # Shut down the worker
+```
+
 The aioprocessing objects can be used just like their multiprocessing
 equivalents - as they are in `func` above - but they can also be 
 seamlessly used inside of `asyncio` coroutines, without ever blocking
@@ -89,7 +100,7 @@ mixing caveat still applies.
 
 Each `multiprocessing` class is replaced by an equivalent `aioprocessing` class,
 distinguished by the `Aio` prefix. So, `Pool` becomes `AioPool`, etc. All methods
-that could block on I/O also have a coroutine version that can be used with `asyncio`. For example, `multiprocessing.Lock.acquire()` can be replaced with `aioprocessing.AioLock.coro_acquire()`.  
+that could block on I/O also have a coroutine version that can be used with `asyncio`. For example, `multiprocessing.Lock.acquire()` can be replaced with `aioprocessing.AioLock.coro_acquire()`. You can pass an `asyncio` EventLoop object to any `coro_*` method using the `loop` keyword argument. For example, `lock.coro_acquire(loop=my_loop)`.
 
 Note that you can also use the `aioprocessing` synchronization primitives as replacements 
 for their equivalent `threading` primitives, in single-process, multi-threaded programs 

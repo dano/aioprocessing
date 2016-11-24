@@ -38,6 +38,7 @@ class _ContextManager:
 class AioBaseLock(metaclass=CoroBuilder):
     pool_workers = 1
     coroutines = ['acquire', 'release']
+
     def __init__(self, *args, **kwargs):
         self._threaded_acquire = False
         def _after_fork(obj):
@@ -84,6 +85,15 @@ class AioBaseLock(metaclass=CoroBuilder):
             out = self._obj.release()
         self._threaded_acquire = False
         return out
+
+    @asyncio.coroutine
+    def __aenter__(self):
+        yield from self.coro_acquire()
+        return None
+
+    @asyncio.coroutine
+    def __aexit__(self):
+        self.release()
 
     def __enter__(self):
         return self._obj.__enter__()

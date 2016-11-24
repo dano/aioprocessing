@@ -14,8 +14,8 @@ __all__ = ['AioProcess', 'AioManager', 'AioPipe', 'AioQueue', 'AioSimpleQueue',
 # is zero for an official release, positive for a development branch,
 # or negative for a release candidate or beta (after the base version
 # number has been incremented)
-version = "0.0.2dev1"
-version_info = (0, 0, 2, -100)
+version = "0.0.2dev2"
+version_info = (0, 0, 2, -101)
 
 if hasattr(multiprocessing, 'get_context'):
     def _get_context():
@@ -127,43 +127,43 @@ def AioSimpleQueue(*, context=None):
 # locks
 
 def AioLock(*, context=None):
-    '''Returns a non-recursive lock object'''
+    """ Returns a non-recursive lock object. """
     context = context = context if context else _get_context()
     from .locks import AioLock
     return AioLock(ctx=context)
 
 def AioRLock(*, context=None):
-    '''Returns a recursive lock object'''
+    """ Returns a recursive lock object. """
     context = context = context if context else _get_context()
     from .locks import AioRLock
     return AioRLock(ctx=context)
 
 def AioCondition(lock=None, *, context=None):
-    '''Returns a condition object'''
+    """ Returns a condition object. """
     context = context = context if context else _get_context()
     from .locks import AioCondition
     return AioCondition(lock, ctx=context)
 
 def AioSemaphore(value=1, *, context=None):
-    '''Returns a semaphore object'''
+    """ Returns a semaphore object. """
     context = context = context if context else _get_context()
     from .locks import AioSemaphore
     return AioSemaphore(value, ctx=context)
 
 def AioBoundedSemaphore(value=1, *, context=None):
-    '''Returns a bounded semaphore object'''
+    """ Returns a bounded semaphore object. """
     context = context = context if context else _get_context()
     from .locks import AioBoundedSemaphore
     return AioBoundedSemaphore(value, ctx=context)
 
 def AioEvent(*, context=None):
-    '''Returns an event object'''
+    """ Returns an event object. """
     context = context = context if context else _get_context()
     from .locks import AioEvent
     return AioEvent(ctx=context)
 
 def AioBarrier(parties, action=None, timeout=None, *, context=None):
-    '''Returns a barrier object'''
+    """ Returns a barrier object. """
     context = context = context if context else _get_context()
     from .locks import AioBarrier
     return AioBarrier(parties, action, timeout, ctx=context)
