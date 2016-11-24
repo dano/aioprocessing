@@ -1,15 +1,14 @@
 import asyncio
+from multiprocessing.util import register_after_fork
 from queue import Queue
-from concurrent.futures import ThreadPoolExecutor
 from threading import (Barrier, BoundedSemaphore, Condition, Event,
                        Lock, RLock, Semaphore)
-from multiprocessing.managers import (SyncManager, BaseProxy, MakeProxyType,
+from multiprocessing.managers import (SyncManager, MakeProxyType,
                                       BarrierProxy, EventProxy, ConditionProxy,
                                       AcquirerProxy)
 
-from . import queues
-from . import util
-from .executor import _ExecutorMixin, CoroBuilder
+from aioprocessing.locks import _ContextManager
+from .executor import _ExecutorMixin
 
 
 AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
@@ -30,11 +29,28 @@ class ProxyCoroBuilder(type):
     """ Build coroutines to proxy functions. """
     def __new__(cls, clsname, bases, dct):
         coro_list = dct.get('coroutines', [])
+        existing_coros = set()
+
+        def find_existing_coros(d):
+            for attr in d:
+                if attr.startswith("coro_") or attr.startswith("thread_"):
+                    existing_coros.add(attr)
+
+        # Determine if any bases include the coroutines attribute, or
+        # if either this class or a base class provides an actual
+        # implementation for a coroutine method.
+        find_existing_coros(dct)
         for b in bases:
-            coro_list.extend(b.__dict__.get('coroutines', []))
+            b_dct = b.__dict__
+            coro_list.extend(b_dct.get('coroutines', []))
+            find_existing_coros(b_dct)
+
         bases += (_AioProxyMixin,)
+
         for func in coro_list:
-            dct['coro_{}'.format(func)] = cls.coro_maker(func)
+            coro_name = 'coro_{}'.format(func)
+            if coro_name not in existing_coros:
+                dct[coro_name] = cls.coro_maker(func)
         return super().__new__(cls, clsname, bases, dct)
 
     @staticmethod
@@ -56,7 +72,68 @@ class AioQueueProxy(AioBaseQueueProxy, metaclass=ProxyCoroBuilder):
 
 
 class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
+    pool_workers = 1
     coroutines = ['acquire', 'release']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._threaded_acquire = False
+        def _after_fork(obj):
+            obj._threaded_acquire = False
+        register_after_fork(self, _after_fork)
+
+    def coro_acquire(self, *args, **kwargs):
+        """ Non-blocking acquire.
+
+        We need a custom implementation here, because we need to
+        set the _threaded_acquire attribute to True once we have
+        the lock. This attribute is used by release() to determine
+        whether the lock should be released in the main thread,
+        or in the Executor thread.
+
+        """
+        def lock_acquired(fut):
+            if fut.result():
+                self._threaded_acquire = True
+        out = self.run_in_executor(self.acquire, *args, **kwargs)
+        out.add_done_callback(lock_acquired)
+        return out
+
+    def __getstate__(self):
+        state = super().__getstate__()
+        state['_threaded_acquire'] = False
+        return state
+
+    def __setstate__(self, state):
+        super().__setstate__(state)
+
+    def release(self):
+        """ Release the lock.
+
+        If the lock was acquired in the same process via
+        coro_acquire, we need to release the lock in the
+        ThreadPoolExecutor's thread.
+
+        """
+        if self._threaded_acquire:
+            out = self.run_in_thread(super().release)
+        else:
+            out = super().release()
+        self._threaded_acquire = False
+        return out
+
+    @asyncio.coroutine
+    def __aenter__(self):
+        yield from self.coro_acquire()
+        return None
+
+    @asyncio.coroutine
+    def __aexit__(self):
+        self.release()
+
+    def __iter__(self):
+        yield from self.coro_acquire()
+        return _ContextManager(self)
 
 
 class AioBarrierProxy(BarrierProxy, metaclass=ProxyCoroBuilder):

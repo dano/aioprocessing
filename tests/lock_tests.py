@@ -1,3 +1,4 @@
+import multiprocessing
 import sys
 import time
 import asyncio
@@ -54,7 +55,7 @@ class GenAioManagerLockTest(GenAioLockTest):
         self.Obj = self.manager.AioLock
         self.inst = self.Obj()
 
-    @unittest.skipIf(not hasattr(multiprocessing, 'get_context'))
+    @unittest.skipIf(not hasattr(multiprocessing, 'get_context'), "No get_context method")
     def test_ctx(self): pass
 
 class GenAioRLockTest(BaseTest, _GenMixin):
@@ -119,25 +120,23 @@ class LockTest(BaseTest):
         self.lock = aioprocessing.AioLock()
 
     def test_lock(self):
-        self.lock = aioprocessing.AioLock()
-        self.assertEqual(self.lock.acquire(), True)
-        self.assertEqual(self.lock.acquire(False), False)
-        self.assertEqual(self.lock.release(), None)
+        self.assertEqual(True, self.lock.acquire())
+        self.assertEqual(False, self.lock.acquire(False))
+        self.assertEqual(None, self.lock.release())
 
     def test_lock_async(self):
         @asyncio.coroutine
         def do_async_lock():
-            self.assertEqual((yield from self.lock.coro_acquire()), True)
+            self.assertEqual(True, (yield from self.lock.coro_acquire()))
+            self.assertEqual(None, self.lock.release())
 
         self.loop.run_until_complete(do_async_lock())
 
     def test_lock_cm(self):
-        if self.type_ == MANAGER_TYPE:
-            self.skipTest("Not relevant for manager type")
         event = Event()
         event2 = Event()
         q = Queue()
-		
+
         @asyncio.coroutine
         def with_lock():
             with (yield from self.lock):
@@ -156,10 +155,8 @@ class LockTest(BaseTest):
 
         @asyncio.coroutine
         def do_async_lock():
-            self.assertEqual((yield from self.lock.coro_acquire(False)), 
-                             False)
-            self.assertEqual((yield from self.lock.coro_acquire(timeout=4)), 
-                             True)
+            self.assertEqual(False, (yield from self.lock.coro_acquire(False)))
+            self.assertEqual(True, (yield from self.lock.coro_acquire(timeout=4)))
 
         p = Process(target=do_lock_acquire, args=(self.lock, e))
         p.start()
@@ -174,17 +171,35 @@ class LockManagerTest(LockTest):
         self.manager = aioprocessing.AioManager()
         self.lock = self.manager.AioLock()
 
+    def tearDown(self):
+        super().tearDown()
+        self.manager.shutdown()
+        self.manager.join()
+
+
 class RLockTest(LockTest):
     def setUp(self):
         super().setUp()
         self.lock = aioprocessing.AioRLock()
 
-class RLockManagerTest(LockTest):
+    def test_lock(self):
+        self.assertEqual(True, self.lock.acquire())
+        self.assertEqual(True, self.lock.acquire(False))
+        self.assertEqual(None, self.lock.release())
+
+
+class RLockManagerTest(RLockTest):
     def setUp(self):
         super().setUp()
         self.type_ = MANAGER_TYPE
         self.manager = aioprocessing.AioManager()
         self.lock = self.manager.AioRLock()
+
+    def tearDown(self):
+        super().tearDown()
+        self.manager.shutdown()
+        self.manager.join()
+
 
 def mix_release(lock, q):
     try:
@@ -197,7 +212,7 @@ def mix_release(lock, q):
         lock.acquire()
         lock.release()
         q.put(True)
-    except Exception as e:
+    except Exception:
         exc = traceback.format_exception(*sys.exc_info())
         q.put(exc)
 
@@ -231,7 +246,7 @@ class LockMixingTest(BaseTest):
         self.lock.release()
         out = q.get(timeout=5)
         p.join()
-        self.assertTrue(isinstance(out, bool), out)
+        self.assertTrue(isinstance(out, bool))
 
 class SpawnLockMixingTest(LockMixingTest):
     def setUp(self):
@@ -240,11 +255,11 @@ class SpawnLockMixingTest(LockMixingTest):
         self.lock = aioprocessing.AioLock(context=context)
 
 if 'forkserver' in get_all_start_methods():
-	class ForkServerLockMixingTest(LockMixingTest):
-		def setUp(self):
-			super().setUp()
-			context = get_context('forkserver')
-			self.lock = aioprocessing.AioLock(context=context)
+    class ForkServerLockMixingTest(LockMixingTest):
+        def setUp(self):
+            super().setUp()
+            context = get_context('forkserver')
+            self.lock = aioprocessing.AioLock(context=context)
 
 
 class SemaphoreTest(BaseTest):
@@ -254,27 +269,27 @@ class SemaphoreTest(BaseTest):
 
     def _test_semaphore(self, sem):
         self.assertReturnsIfImplemented(2, get_value, sem)
-        self.assertEqual(sem.acquire(), True)
+        self.assertEqual(True, sem.acquire())
         self.assertReturnsIfImplemented(1, get_value, sem)
 
         @asyncio.coroutine
         def sem_acquire():
-            self.assertEqual((yield from sem.coro_acquire()), True)
+            self.assertEqual(True, (yield from sem.coro_acquire()))
         self.loop.run_until_complete(sem_acquire())
         self.assertReturnsIfImplemented(0, get_value, sem)
-        self.assertEqual(sem.acquire(False), False)
+        self.assertEqual(False, sem.acquire(False))
         self.assertReturnsIfImplemented(0, get_value, sem)
-        self.assertEqual(sem.release(), None)
+        self.assertEqual(None, sem.release())
         self.assertReturnsIfImplemented(1, get_value, sem)
-        self.assertEqual(sem.release(), None)
+        self.assertEqual(None, sem.release())
         self.assertReturnsIfImplemented(2, get_value, sem)
 
     def test_semaphore(self):
         sem = self.sem
         self._test_semaphore(sem)
-        self.assertEqual(sem.release(), None)
+        self.assertEqual(None, sem.release())
         self.assertReturnsIfImplemented(3, get_value, sem)
-        self.assertEqual(sem.release(), None)
+        self.assertEqual(None, sem.release())
         self.assertReturnsIfImplemented(4, get_value, sem)
 
 class BoundedSemaphoreTest(SemaphoreTest):
@@ -306,7 +321,7 @@ class BarrierTest(BaseTest):
         def wait_barrier():
             fut = asyncio.async(wait_barrier_async())
             yield from asyncio.sleep(.5)
-            self.assertEqual(self.barrier.n_waiting, 1)
+            self.assertEqual(1, self.barrier.n_waiting)
             self.barrier.wait()
 
         #t = threading.Thread(target=self._wait_barrier)
@@ -321,7 +336,7 @@ class BarrierTest(BaseTest):
         def wait_barrier():
             event.wait()
             yield from asyncio.sleep(.2)
-            self.assertEqual(self.barrier.n_waiting, 1)
+            self.assertEqual(1, self.barrier.n_waiting)
             yield from self.barrier.coro_wait()
         self.loop.run_until_complete(wait_barrier())
         p.join()
