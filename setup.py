@@ -19,7 +19,7 @@ setup(
     keywords="asyncio multiprocessing coroutine",
     url="https://github.com/dano/aioprocessing",
     long_description=readme,
-    classifiers=(
+    classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Natural Language :: English',
@@ -32,7 +32,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Topic :: Software Development :: Libraries :: Python Modules'
-    ),
+    ],
 )
 
 
