@@ -128,7 +128,7 @@ class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
         return None
 
     @asyncio.coroutine
-    def __aexit__(self):
+    def __aexit__(self, *args, **kwargs):
         self.release()
 
     def __iter__(self):

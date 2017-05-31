@@ -92,7 +92,7 @@ class AioBaseLock(metaclass=CoroBuilder):
         return None
 
     @asyncio.coroutine
-    def __aexit__(self):
+    def __aexit__(self, *args, **kwargs):
         self.release()
 
     def __enter__(self):
