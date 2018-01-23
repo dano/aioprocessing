@@ -27,13 +27,15 @@ else:
     has_context = False
 
 def AioProcess(group=None, target=None, name=None,
-               args=(), kwargs = {}, *, daemon=None, context=None):
+               args=(), kwargs = None, *, daemon=None, context=None):
     """ Returns an asyncio-friendly version of multiprocessing.Process. 
     
     Provides the following coroutines:
     coro_join()
     
     """
+    if kwargs is None:
+        kwargs = {}
     context = context if context else _get_context()
     from .process import AioProcess
     return AioProcess(group=group, target=target, name=name, args=args,

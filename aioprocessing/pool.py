@@ -30,7 +30,9 @@ class AioPool(metaclass=CoroBuilder):
              error_callback=set_exc, **kwargs)
         return fut
 
-    def coro_apply(self, func, args=(), kwds={}, *, loop=None):
+    def coro_apply(self, func, args=(), kwds=None, *, loop=None):
+        if kwds is None:
+            kwds = {}
         return self._coro_func('apply_async', func, 
                                args=args, kwds=kwds, loop=loop)
 
