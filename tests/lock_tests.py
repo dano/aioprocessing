@@ -331,12 +331,14 @@ class BarrierTest(BaseTest):
         self.barrier.wait()
 
     def test_barrier(self):
+        fut = None
 
         @asyncio.coroutine
         def wait_barrier_async():
             yield from self.barrier.coro_wait()
 
         def wait_barrier():
+            nonlocal fut
             fut = asyncio.async(wait_barrier_async())
             yield from asyncio.sleep(.5)
             self.assertEqual(1, self.barrier.n_waiting)
@@ -345,6 +347,7 @@ class BarrierTest(BaseTest):
         # t = threading.Thread(target=self._wait_barrier)
         # t.start()
         self.loop.run_until_complete(wait_barrier())
+        self.loop.run_until_complete(fut)
 
     def test_barrier_multiproc(self):
         event = Event()
