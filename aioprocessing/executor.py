@@ -13,37 +13,38 @@ def init_executor(func):
         return func(self, *args, **kwargs)
     return wrapper
 
+
 class _ExecutorMixin():
     """ A Mixin that provides asynchronous functionality.
-    
+
     This mixin provides methods that allow a class to run
     blocking methods via asyncio in a ThreadPoolExecutor.
     It also provides methods that attempt to keep the object
     picklable despite having a non-picklable ThreadPoolExecutor
     as part of its state.
-    
+
     """
     pool_workers = cpu_count()
 
     @init_executor
     def run_in_executor(self, callback, *args, loop=None, **kwargs):
         """ Wraps run_in_executor so we can support kwargs.
-        
+
         BaseEventLoop.run_in_executor does not support kwargs, so
         we wrap our callback in a lambda if kwargs are provided.
-        
+
         """
-        return util.run_in_executor(self._executor, callback, *args, 
+        return util.run_in_executor(self._executor, callback, *args,
                                     loop=loop, **kwargs)
 
     @init_executor
     def run_in_thread(self, callback, *args, **kwargs):
         """ Runs a method in an executor thread.
-        
+
         This is used when a method must be run in a thread (e.g.
         to that a lock is released in the same thread it was
         acquired), but should be run in a blocking way.
-        
+
         """
         fut = self._executor.submit(callback, *args, **kwargs)
         return fut.result()
@@ -55,7 +56,7 @@ class _ExecutorMixin():
         assert attr is not '_obj', 'Make sure that your Class has a ' \
                                    '"delegate" assigned'
         if (self._obj and hasattr(self._obj, attr) and
-            not attr.startswith("__")):
+                not attr.startswith("__")):
             return getattr(self._obj, attr)
         raise AttributeError(attr)
 
@@ -71,7 +72,7 @@ class _ExecutorMixin():
 
 class CoroBuilder(type):
     """ Metaclass for adding coroutines to a class.
-    
+
     This metaclass has two main roles:
     1) Make _ExecutorMixin a parent of the given class
     2) For every function name listed in the class attribute "coroutines",
@@ -92,7 +93,7 @@ class CoroBuilder(type):
                    used by the wrapper class. This defaults to cpu_count(),
                    but for classes that need to acquire locks, it should
                    always be set to 1.
-    
+
     """
     def __new__(cls, clsname, bases, dct, **kwargs):
         coro_list = dct.get('coroutines', [])
@@ -127,11 +128,11 @@ class CoroBuilder(type):
 
     def __init__(cls, name, bases, dct):
         """ Properly initialize a coroutine wrapper class.
-        
+
         Sets pool_workers and delegate on the class, and also
         adds an __init__ method to it that instantiates the
         delegate with the proper context.
-        
+
         """
         super().__init__(name, bases, dct)
         pool_workers = dct.get('pool_workers')
@@ -156,7 +157,7 @@ class CoroBuilder(type):
             cls.pool_workers = pool_workers
 
         # Here's the __init__ we want every wrapper class to use.
-        # It just instantiates the delegate mp object using the 
+        # It just instantiates the delegate mp object using the
         # correct context.
         @wraps(old_init)
         def init_func(self, *args, **kwargs):
@@ -180,7 +181,6 @@ class CoroBuilder(type):
     @staticmethod
     def coro_maker(func):
         def coro_func(self, *args, loop=None, **kwargs):
-            return self.run_in_executor(getattr(self, func), *args, 
+            return self.run_in_executor(getattr(self, func), *args,
                                         loop=loop, **kwargs)
         return coro_func
-

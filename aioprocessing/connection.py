@@ -1,4 +1,4 @@
-import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing.connection import (Listener, Client, deliver_challenge,
                                         answer_challenge, wait)
 
@@ -14,9 +14,9 @@ class AioConnection(metaclass=CoroBuilder):
 
     def __init__(self, obj):
         """ Initialize the AioConnection.
-        
+
         obj - a multiprocessing.Connection object.
-        
+
         """
         super().__init__()
         self._obj = obj
@@ -55,11 +55,12 @@ def coro_deliver_challenge(*args, **kwargs):
     executor = ThreadPoolExecutor(max_workers=1)
     return run_in_executor(executor, deliver_challenge, *args, **kwargs)
 
+
 def coro_answer_challenge(*args, **kwargs):
     executor = ThreadPoolExecutor(max_workers=1)
     return run_in_executor(executor, answer_challenge, *args, **kwargs)
 
+
 def coro_wait(*args, **kwargs):
     executor = ThreadPoolExecutor(max_workers=1)
     return run_in_executor(executor, wait, *args, **kwargs)
-

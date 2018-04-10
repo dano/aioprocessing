@@ -3,15 +3,16 @@ import unittest
 import multiprocessing
 from multiprocessing import Process
 from array import array
-from concurrent.futures import ProcessPoolExecutor
 
 import aioprocessing
 from aioprocessing.connection import AioConnection, AioListener, AioClient
 
 from ._base_test import BaseTest
 
+
 def conn_send(conn, val):
     conn.send(val)
+
 
 def client_sendback(event, address, authkey):
     event.wait()
@@ -20,8 +21,9 @@ def client_sendback(event, address, authkey):
     conn.send(got+got)
     conn.close()
 
+
 def listener_sendback(event, address, authkey):
-        listener = multiprocessing.connection.Listener(address, 
+        listener = multiprocessing.connection.Listener(address,
                                                        authkey=authkey)
         event.set()
         conn = listener.accept()
@@ -36,12 +38,14 @@ class PipeTest(BaseTest):
         val = 25
         p = Process(target=conn_send, args=(conn1, val))
         p.start()
+
         @asyncio.coroutine
         def conn_recv():
             out = yield from conn2.coro_recv()
             self.assertEqual(out, val)
 
         self.loop.run_until_complete(conn_recv())
+
 
 class ListenerTest(BaseTest):
     def test_listener(self):
@@ -61,6 +65,7 @@ class ListenerTest(BaseTest):
             p.join()
             p = Process(target=client_sendback, args=(event, address, authkey))
             p.start()
+
             def conn_accept():
                 fut = listener.coro_accept()
                 event.set()
@@ -88,7 +93,7 @@ class ListenerTest(BaseTest):
 
         def do_work():
             yield from conn.coro_send(25)
-            arr = array('i', [0,0,0,0])
+            arr = array('i', [0, 0, 0, 0])
             yield from conn.coro_recv_bytes_into(arr)
             self.assertEqual(arr, array('i', [25, 26, 27, 28]))
             conn.close()
@@ -116,6 +121,7 @@ class ListenerTest(BaseTest):
         self.assertRaises(OSError, conn.send, "hi")
         p.terminate()
         p.join()
+
 
 if __name__ == "__main__":
     unittest.main()

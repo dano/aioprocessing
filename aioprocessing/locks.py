@@ -1,8 +1,8 @@
 import asyncio
 
 from .executor import CoroBuilder
-from  multiprocessing import (Event, Lock, RLock, BoundedSemaphore,
-                                          Condition, Semaphore, Barrier)
+from multiprocessing import (Event, Lock, RLock, BoundedSemaphore,
+                             Condition, Semaphore, Barrier)
 from multiprocessing.util import register_after_fork
 
 __all__ = ["AioLock", "AioRLock", "AioBarrier", "AioCondition", "AioEvent",
@@ -41,19 +41,20 @@ class AioBaseLock(metaclass=CoroBuilder):
 
     def __init__(self, *args, **kwargs):
         self._threaded_acquire = False
+
         def _after_fork(obj):
             obj._threaded_acquire = False
         register_after_fork(self, _after_fork)
 
     def coro_acquire(self, *args, **kwargs):
         """ Non-blocking acquire.
-        
+
         We need a custom implementation here, because we need to
         set the _threaded_acquire attribute to True once we have
         the lock. This attribute is used by release() to determine
         whether the lock should be released in the main thread,
         or in the Executor thread.
-        
+
         """
         def lock_acquired(fut):
             if fut.result():
@@ -73,11 +74,11 @@ class AioBaseLock(metaclass=CoroBuilder):
 
     def release(self):
         """ Release the lock.
-        
+
         If the lock was acquired in the same process via
         coro_acquire, we need to release the lock in the
         ThreadPoolExecutor's thread.
-        
+
         """
         if self._threaded_acquire:
             out = self.run_in_thread(self._obj.release)
@@ -140,4 +141,3 @@ class AioSemaphore(AioBaseLock):
 
 class AioBoundedSemaphore(AioBaseLock):
     delegate = BoundedSemaphore
-
