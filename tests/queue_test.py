@@ -6,14 +6,17 @@ from concurrent.futures import ProcessPoolExecutor
 
 from ._base_test import BaseTest, _GenMixin
 
+
 def queue_put(q, val):
     val = q.put(val)
     return val
+
 
 def queue_get(q, e):
     val = q.get()
     e.set()
     q.put(val)
+
 
 class GenQueueMixin(_GenMixin):
     def setUp(self):
@@ -24,20 +27,24 @@ class GenQueueMixin(_GenMixin):
     def _after(self):
         self.inst.put(1)
 
+
 class GenAioQueueTest(GenQueueMixin, BaseTest):
     def setUp(self):
         self.Obj = aioprocessing.AioQueue
         super().setUp()
+
 
 class GenAioSimpleQueueTest(GenQueueMixin, BaseTest):
     def setUp(self):
         self.Obj = aioprocessing.AioSimpleQueue
         super().setUp()
 
+
 class GenAioJoinableQueueTest(GenQueueMixin, BaseTest):
     def setUp(self):
         self.Obj = aioprocessing.AioJoinableQueue
         super().setUp()
+
 
 class QueueTest(BaseTest):
     def test_blocking_put(self):
@@ -84,6 +91,7 @@ class QueueTest(BaseTest):
     def test_simple_queue(self):
         q = aioprocessing.AioSimpleQueue()
         val = 8
+
         @asyncio.coroutine
         def queue_put():
             yield from q.coro_put(val)
@@ -99,6 +107,7 @@ class ManagerQueueTest(BaseTest):
         q = m.AioQueue()
         p = ProcessPoolExecutor(max_workers=1)
         val = 4
+
         def submit():
             yield p.submit(queue_put, q, val)
         next(submit())

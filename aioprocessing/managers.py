@@ -12,7 +12,7 @@ from .executor import _ExecutorMixin
 
 
 AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
-    'task_done', 'get', 'qsize', 'put', 'put_nowait', 
+    'task_done', 'get', 'qsize', 'put', 'put_nowait',
     'get_nowait', 'empty', 'join', '_qsize', 'full'
     ))
 
@@ -21,7 +21,7 @@ class _AioProxyMixin(_ExecutorMixin):
     _obj = None
 
     def _async_call(self, method, *args, loop=None, **kwargs):
-        return asyncio.async(self.run_in_executor(self._callmethod, method, 
+        return asyncio.async(self.run_in_executor(self._callmethod, method,
                                                   args, kwargs, loop=loop))
 
 
@@ -56,17 +56,17 @@ class ProxyCoroBuilder(type):
     @staticmethod
     def coro_maker(func):
         def coro_func(self, *args, loop=None, **kwargs):
-            return self._async_call(func, *args, loop=loop, 
+            return self._async_call(func, *args, loop=loop,
                                     **kwargs)
         return coro_func
 
 
 class AioQueueProxy(AioBaseQueueProxy, metaclass=ProxyCoroBuilder):
     """ A Proxy object for AioQueue.
-    
+
     Provides coroutines for calling 'get' and 'put' on the
     proxy.
-    
+
     """
     coroutines = ['get', 'put']
 
@@ -78,6 +78,7 @@ class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._threaded_acquire = False
+
         def _after_fork(obj):
             obj._threaded_acquire = False
         register_after_fork(self, _after_fork)
@@ -155,10 +156,10 @@ class AioSyncManager(SyncManager):
 
 AioSyncManager.register("AioQueue", Queue, AioQueueProxy)
 AioSyncManager.register("AioBarrier", Barrier, AioQueueProxy)
-AioSyncManager.register("AioBoundedSemaphore", BoundedSemaphore, AioAcquirerProxy)
+AioSyncManager.register("AioBoundedSemaphore", BoundedSemaphore,
+                        AioAcquirerProxy)
 AioSyncManager.register("AioCondition", Condition, AioConditionProxy)
 AioSyncManager.register("AioEvent", Event, AioQueueProxy)
 AioSyncManager.register("AioLock", Lock, AioAcquirerProxy)
 AioSyncManager.register("AioRLock", RLock, AioAcquirerProxy)
 AioSyncManager.register("AioSemaphore", Semaphore, AioAcquirerProxy)
-

@@ -1,20 +1,21 @@
 import asyncio
-import unittest
 import aioprocessing
-from multiprocessing import Event
-import time
 
 from ._base_test import BaseTest, _GenMixin
+
 
 def work_func(a, b):
     c = a * b
     return c
 
+
 def map_func(z):
     return z * 3
 
+
 def starmap(func, it):
     return map(func, *zip(*it))
+
 
 class GenAioPoolTest(BaseTest, _GenMixin):
     def setUp(self):
@@ -23,7 +24,8 @@ class GenAioPoolTest(BaseTest, _GenMixin):
         self.inst = self.Obj(1)
         self.initargs = (1,)
         self.meth = 'coro_map'
-        self.args = (map_func, [1,2,3],)
+        self.args = (map_func, [1, 2, 3],)
+
 
 class PoolTest(BaseTest):
     def setUp(self):
@@ -50,6 +52,7 @@ class PoolTest(BaseTest):
 
     def test_coro_map(self):
         it = list(range(5))
+
         @asyncio.coroutine
         def do_map():
             out = yield from self.pool.coro_map(map_func, it)
@@ -58,7 +61,8 @@ class PoolTest(BaseTest):
         self.loop.run_until_complete(do_map())
 
     def test_coro_starmap(self):
-        it = list(zip(range(5), range(5,10)))
+        it = list(zip(range(5), range(5, 10)))
+
         @asyncio.coroutine
         def do_starmap():
             out = yield from self.pool.coro_starmap(work_func, it)
@@ -73,4 +77,3 @@ class PoolTest(BaseTest):
 
         self.pool.close()
         self.loop.run_until_complete(do_join())
-

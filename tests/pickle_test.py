@@ -11,5 +11,6 @@ class PickleTest(unittest.TestCase):
         unpickled = pickle.loads(pickled)
         self.assertEqual(q.test, unpickled.test)
 
+
 if __name__ == "__main__":
     unittest.main()
