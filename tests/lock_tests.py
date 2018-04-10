@@ -339,7 +339,7 @@ class BarrierTest(BaseTest):
 
         def wait_barrier():
             nonlocal fut
-            fut = asyncio.async(wait_barrier_async())
+            fut = asyncio.ensure_future(wait_barrier_async())
             yield from asyncio.sleep(.5)
             self.assertEqual(1, self.barrier.n_waiting)
             self.barrier.wait()

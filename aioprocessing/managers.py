@@ -21,8 +21,9 @@ class _AioProxyMixin(_ExecutorMixin):
     _obj = None
 
     def _async_call(self, method, *args, loop=None, **kwargs):
-        return asyncio.async(self.run_in_executor(self._callmethod, method,
-                                                  args, kwargs, loop=loop))
+        return asyncio.ensure_future(
+            self.run_in_executor(self._callmethod, method,
+                                 args, kwargs, loop=loop))
 
 
 class ProxyCoroBuilder(type):

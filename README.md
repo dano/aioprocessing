@@ -55,8 +55,8 @@ library. Here's an example demonstrating the `aioprocessing` versions of
         lock = aioprocessing.AioLock()
         event = aioprocessing.AioEvent()
         tasks = [
-            asyncio.async(example(queue, event, lock)), 
-            asyncio.async(example2(queue, event, lock)),
+            asyncio.ensure_future(example(queue, event, lock)), 
+            asyncio.ensure_future(example2(queue, event, lock)),
         ]
         loop.run_until_complete(asyncio.wait(tasks))
         loop.close()
@@ -136,5 +136,4 @@ versions by adding coroutine versions of all the blocking methods.
 What versions of Python are compatible?
 ---------------------------------------
 
-`aioprocessing` will work out of the box on Python 3.4+, and will also work with Python
-3.3 if you install the [PyPI version](https://pypi.python.org/pypi/asyncio) of `asyncio`.
+`aioprocessing` will work out of the box on Python 3.4+
