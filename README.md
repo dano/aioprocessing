@@ -136,4 +136,4 @@ versions by adding coroutine versions of all the blocking methods.
 What versions of Python are compatible?
 ---------------------------------------
 
-`aioprocessing` will work out of the box on Python 3.4+
+`aioprocessing` will work out of the box on Python 3.4+.
