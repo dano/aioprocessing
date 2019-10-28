@@ -3,10 +3,22 @@ import multiprocessing
 from .connection import *  # noqa
 from .managers import *  # noqa
 
-__all__ = ['AioProcess', 'AioManager', 'AioPipe', 'AioQueue',
-           'AioSimpleQueue', 'AioJoinableQueue', 'AioLock',
-           'AioRLock', 'AioCondition', 'AioPool', 'AioSemaphore',
-           'AioBoundedSemaphore', 'AioEvent', 'AioBarrier']
+__all__ = [
+    "AioProcess",
+    "AioManager",
+    "AioPipe",
+    "AioQueue",
+    "AioSimpleQueue",
+    "AioJoinableQueue",
+    "AioLock",
+    "AioRLock",
+    "AioCondition",
+    "AioPool",
+    "AioSemaphore",
+    "AioBoundedSemaphore",
+    "AioEvent",
+    "AioBarrier",
+]
 
 # version is a human-readable version number.
 
@@ -18,18 +30,30 @@ __all__ = ['AioProcess', 'AioManager', 'AioPipe', 'AioQueue',
 version = "1.0.1"
 version_info = (1, 0, 1, 0)
 
-if hasattr(multiprocessing, 'get_context'):
+if hasattr(multiprocessing, "get_context"):
+
     def _get_context():
         return multiprocessing.get_context()
+
     has_context = True
 else:
+
     def _get_context():
         return None
+
     has_context = False
 
 
-def AioProcess(group=None, target=None, name=None,
-               args=(), kwargs=None, *, daemon=None, context=None):
+def AioProcess(
+    group=None,
+    target=None,
+    name=None,
+    args=(),
+    kwargs=None,
+    *,
+    daemon=None,
+    context=None
+):
     """ Returns an asyncio-friendly version of multiprocessing.Process.
 
     Provides the following coroutines:
@@ -40,12 +64,26 @@ def AioProcess(group=None, target=None, name=None,
         kwargs = {}
     context = context if context else _get_context()
     from .process import AioProcess
-    return AioProcess(group=group, target=target, name=name, args=args,
-                      kwargs=kwargs, daemon=daemon, ctx=context)
+
+    return AioProcess(
+        group=group,
+        target=target,
+        name=name,
+        args=args,
+        kwargs=kwargs,
+        daemon=daemon,
+        ctx=context,
+    )
 
 
-def AioPool(processes=None, initializer=None, initargs=(),
-            maxtasksperchild=None, *, context=None):
+def AioPool(
+    processes=None,
+    initializer=None,
+    initargs=(),
+    maxtasksperchild=None,
+    *,
+    context=None
+):
     """ Returns an asyncio-friendly version of multiprocessing.Pool.
 
     Provides the following coroutines:
@@ -57,9 +95,14 @@ def AioPool(processes=None, initializer=None, initargs=(),
     """
     context = context if context else _get_context()
     from .pool import AioPool
-    return AioPool(processes=processes, initializer=initializer,
-                   initargs=initargs, maxtasksperchild=maxtasksperchild,
-                   ctx=context)
+
+    return AioPool(
+        processes=processes,
+        initializer=initializer,
+        initargs=initargs,
+        maxtasksperchild=maxtasksperchild,
+        ctx=context,
+    )
 
 
 def AioManager(*, context=None):
@@ -79,8 +122,9 @@ def AioManager(*, context=None):
     """
     context = context if context else _get_context()
     from .managers import AioSyncManager
+
     # For Python 3.3 support, don't always pass ctx.
-    kwargs = {'ctx': context} if has_context else {}
+    kwargs = {"ctx": context} if has_context else {}
     m = AioSyncManager(**kwargs)
     m.start()
     return m
@@ -89,6 +133,7 @@ def AioManager(*, context=None):
 def AioPipe(duplex=True):
     """ Returns a pair of AioConnection objects. """
     from .connection import AioConnection
+
     conn1, conn2 = multiprocessing.Pipe(duplex=duplex)
     # Transform the returned connection instances into
     # instance of AioConnection.
@@ -99,6 +144,7 @@ def AioPipe(duplex=True):
 
 # queues
 
+
 def AioQueue(maxsize=0, *, context=None):
     """ Returns an asyncio-friendly version of a multiprocessing.Queue
 
@@ -108,6 +154,7 @@ def AioQueue(maxsize=0, *, context=None):
     """
     context = context = context if context else _get_context()
     from .queues import AioQueue
+
     return AioQueue(maxsize, ctx=context)
 
 
@@ -120,6 +167,7 @@ def AioJoinableQueue(maxsize=0, *, context=None):
     """
     context = context = context if context else _get_context()
     from .queues import AioJoinableQueue
+
     return AioJoinableQueue(maxsize, ctx=context)
 
 
@@ -132,15 +180,18 @@ def AioSimpleQueue(*, context=None):
     """
     context = context = context if context else _get_context()
     from .queues import AioSimpleQueue
+
     return AioSimpleQueue(ctx=context)
 
 
 # locks
 
+
 def AioLock(*, context=None):
     """ Returns a non-recursive lock object. """
     context = context = context if context else _get_context()
     from .locks import AioLock
+
     return AioLock(ctx=context)
 
 
@@ -148,6 +199,7 @@ def AioRLock(*, context=None):
     """ Returns a recursive lock object. """
     context = context = context if context else _get_context()
     from .locks import AioRLock
+
     return AioRLock(ctx=context)
 
 
@@ -155,6 +207,7 @@ def AioCondition(lock=None, *, context=None):
     """ Returns a condition object. """
     context = context = context if context else _get_context()
     from .locks import AioCondition
+
     return AioCondition(lock, ctx=context)
 
 
@@ -162,6 +215,7 @@ def AioSemaphore(value=1, *, context=None):
     """ Returns a semaphore object. """
     context = context = context if context else _get_context()
     from .locks import AioSemaphore
+
     return AioSemaphore(value, ctx=context)
 
 
@@ -169,6 +223,7 @@ def AioBoundedSemaphore(value=1, *, context=None):
     """ Returns a bounded semaphore object. """
     context = context = context if context else _get_context()
     from .locks import AioBoundedSemaphore
+
     return AioBoundedSemaphore(value, ctx=context)
 
 
@@ -176,6 +231,7 @@ def AioEvent(*, context=None):
     """ Returns an event object. """
     context = context = context if context else _get_context()
     from .locks import AioEvent
+
     return AioEvent(ctx=context)
 
 
@@ -183,4 +239,5 @@ def AioBarrier(parties, action=None, timeout=None, *, context=None):
     """ Returns a barrier object. """
     context = context = context if context else _get_context()
     from .locks import AioBarrier
+
     return AioBarrier(parties, action, timeout, ctx=context)

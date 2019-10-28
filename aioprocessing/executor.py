@@ -8,13 +8,14 @@ from . import util
 def init_executor(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
-        if not hasattr(self, '_executor'):
+        if not hasattr(self, "_executor"):
             self._executor = self._get_executor()
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
-class _ExecutorMixin():
+class _ExecutorMixin:
     """ A Mixin that provides asynchronous functionality.
 
     This mixin provides methods that allow a class to run
@@ -24,6 +25,7 @@ class _ExecutorMixin():
     as part of its state.
 
     """
+
     pool_workers = cpu_count()
 
     @init_executor
@@ -34,8 +36,9 @@ class _ExecutorMixin():
         we wrap our callback in a lambda if kwargs are provided.
 
         """
-        return util.run_in_executor(self._executor, callback, *args,
-                                    loop=loop, **kwargs)
+        return util.run_in_executor(
+            self._executor, callback, *args, loop=loop, **kwargs
+        )
 
     @init_executor
     def run_in_thread(self, callback, *args, **kwargs):
@@ -53,16 +56,20 @@ class _ExecutorMixin():
         return ThreadPoolExecutor(max_workers=self.pool_workers)
 
     def __getattr__(self, attr):
-        assert attr is not '_obj', 'Make sure that your Class has a ' \
-                                   '"delegate" assigned'
-        if (self._obj and hasattr(self._obj, attr) and
-                not attr.startswith("__")):
+        assert attr is not "_obj", (
+            "Make sure that your Class has a " '"delegate" assigned'
+        )
+        if (
+            self._obj
+            and hasattr(self._obj, attr)
+            and not attr.startswith("__")
+        ):
             return getattr(self._obj, attr)
         raise AttributeError(attr)
 
     def __getstate__(self):
         self_dict = self.__dict__.copy()
-        self_dict['_executor'] = None
+        self_dict["_executor"] = None
         return self_dict
 
     def __setstate__(self, state):
@@ -95,8 +102,9 @@ class CoroBuilder(type):
                    always be set to 1.
 
     """
+
     def __new__(cls, clsname, bases, dct, **kwargs):
-        coro_list = dct.get('coroutines', [])
+        coro_list = dct.get("coroutines", [])
         existing_coros = set()
 
         def find_existing_coros(d):
@@ -110,7 +118,7 @@ class CoroBuilder(type):
         find_existing_coros(dct)
         for b in bases:
             b_dct = b.__dict__
-            coro_list.extend(b_dct.get('coroutines', []))
+            coro_list.extend(b_dct.get("coroutines", []))
             find_existing_coros(b_dct)
 
         # Add _ExecutorMixin to bases.
@@ -120,7 +128,7 @@ class CoroBuilder(type):
         # Add coro funcs to dct, but only if a definition
         # is not already provided by dct or one of our bases.
         for func in coro_list:
-            coro_name = 'coro_{}'.format(func)
+            coro_name = "coro_{}".format(func)
             if coro_name not in existing_coros:
                 dct[coro_name] = cls.coro_maker(func)
 
@@ -135,19 +143,19 @@ class CoroBuilder(type):
 
         """
         super().__init__(name, bases, dct)
-        pool_workers = dct.get('pool_workers')
-        delegate = dct.get('delegate')
-        old_init = dct.get('__init__')
+        pool_workers = dct.get("pool_workers")
+        delegate = dct.get("delegate")
+        old_init = dct.get("__init__")
         # Search bases for values we care about, if we didn't
         # find them on the current class.
         for b in bases:
             b_dct = b.__dict__
             if not pool_workers:
-                pool_workers = b_dct.get('pool_workers')
+                pool_workers = b_dct.get("pool_workers")
             if not delegate:
-                delegate = b_dct.get('delegate')
+                delegate = b_dct.get("delegate")
             if not old_init:
-                old_init = b_dct.get('__init__')
+                old_init = b_dct.get("__init__")
 
         cls.delegate = delegate
 
@@ -170,17 +178,20 @@ class CoroBuilder(type):
             # using that context. Otherwise, we'll just use the default
             # context.
             if cls.delegate:
-                ctx = kwargs.pop('ctx', None)
+                ctx = kwargs.pop("ctx", None)
                 if ctx:
                     clz = getattr(ctx, cls.delegate.__name__)
                 else:
                     clz = cls.delegate
                 self._obj = clz(*args, **kwargs)
+
         cls.__init__ = init_func
 
     @staticmethod
     def coro_maker(func):
         def coro_func(self, *args, loop=None, **kwargs):
-            return self.run_in_executor(getattr(self, func), *args,
-                                        loop=loop, **kwargs)
+            return self.run_in_executor(
+                getattr(self, func), *args, loop=loop, **kwargs
+            )
+
         return coro_func

@@ -18,18 +18,17 @@ def client_sendback(event, address, authkey):
     event.wait()
     conn = multiprocessing.connection.Client(address, authkey=authkey)
     got = conn.recv()
-    conn.send(got+got)
+    conn.send(got + got)
     conn.close()
 
 
 def listener_sendback(event, address, authkey):
-        listener = multiprocessing.connection.Listener(address,
-                                                       authkey=authkey)
-        event.set()
-        conn = listener.accept()
-        inval = conn.recv()
-        conn.send_bytes(array('i', [inval, inval+1, inval+2, inval+3]))
-        conn.close()
+    listener = multiprocessing.connection.Listener(address, authkey=authkey)
+    event.set()
+    conn = listener.accept()
+    inval = conn.recv()
+    conn.send_bytes(array("i", [inval, inval + 1, inval + 2, inval + 3]))
+    conn.close()
 
 
 class PipeTest(BaseTest):
@@ -49,8 +48,8 @@ class PipeTest(BaseTest):
 
 class ListenerTest(BaseTest):
     def test_listener(self):
-        address = ('localhost', 8999)
-        authkey = b'abcdefg'
+        address = ("localhost", 8999)
+        authkey = b"abcdefg"
         event = multiprocessing.Event()
         p = Process(target=client_sendback, args=(event, address, authkey))
         p.start()
@@ -82,8 +81,8 @@ class ListenerTest(BaseTest):
             listener.close()
 
     def test_client(self):
-        address = ('localhost', 8999)
-        authkey = b'abcdefg'
+        address = ("localhost", 8999)
+        authkey = b"abcdefg"
         event = multiprocessing.Event()
         p = Process(target=listener_sendback, args=(event, address, authkey))
         p.start()
@@ -93,24 +92,24 @@ class ListenerTest(BaseTest):
 
         def do_work():
             yield from conn.coro_send(25)
-            arr = array('i', [0, 0, 0, 0])
+            arr = array("i", [0, 0, 0, 0])
             yield from conn.coro_recv_bytes_into(arr)
-            self.assertEqual(arr, array('i', [25, 26, 27, 28]))
+            self.assertEqual(arr, array("i", [25, 26, 27, 28]))
             conn.close()
 
         self.loop.run_until_complete(do_work())
         p.join()
 
     def test_listener_ctxmgr(self):
-        address = ('localhost', 8999)
-        authkey = b'abcdefg'
+        address = ("localhost", 8999)
+        authkey = b"abcdefg"
         with AioListener(address, authkey=authkey) as listener:
             self.assertIsInstance(listener, AioListener)
         self.assertRaises(OSError, listener.accept)
 
     def test_client_ctxmgr(self):
-        address = ('localhost', 8999)
-        authkey = b'abcdefg'
+        address = ("localhost", 8999)
+        authkey = b"abcdefg"
         event = multiprocessing.Event()
         p = Process(target=listener_sendback, args=(event, address, authkey))
         p.daemon = True

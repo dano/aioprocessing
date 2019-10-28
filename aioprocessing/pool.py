@@ -4,12 +4,12 @@ import asyncio
 
 from .executor import CoroBuilder
 
-__all__ = ['AioPool']
+__all__ = ["AioPool"]
 
 
 class AioPool(metaclass=CoroBuilder):
     delegate = Pool
-    coroutines = ['join']
+    coroutines = ["join"]
 
     def _coro_func(self, funcname, *args, loop=None, **kwargs):
         """ Call the given function, and wrap the reuslt in a Future.
@@ -29,23 +29,25 @@ class AioPool(metaclass=CoroBuilder):
             loop.call_soon_threadsafe(fut.set_exception, exc)
 
         func = getattr(self._obj, funcname)
-        func(*args, callback=set_result,
-             error_callback=set_exc, **kwargs)
+        func(*args, callback=set_result, error_callback=set_exc, **kwargs)
         return fut
 
     def coro_apply(self, func, args=(), kwds=None, *, loop=None):
         if kwds is None:
             kwds = {}
-        return self._coro_func('apply_async', func,
-                               args=args, kwds=kwds, loop=loop)
+        return self._coro_func(
+            "apply_async", func, args=args, kwds=kwds, loop=loop
+        )
 
     def coro_map(self, func, iterable, chunksize=None, *, loop=None):
-        return self._coro_func('map_async', func, iterable,
-                               chunksize=chunksize, loop=loop)
+        return self._coro_func(
+            "map_async", func, iterable, chunksize=chunksize, loop=loop
+        )
 
     def coro_starmap(self, func, iterable, chunksize=None, *, loop=None):
-        return self._coro_func('starmap_async', func, iterable,
-                               chunksize=chunksize, loop=loop)
+        return self._coro_func(
+            "starmap_async", func, iterable, chunksize=chunksize, loop=loop
+        )
 
     def __enter__(self):
         self._obj.__enter__()

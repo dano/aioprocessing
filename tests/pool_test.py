@@ -23,8 +23,8 @@ class GenAioPoolTest(BaseTest, _GenMixin):
         self.Obj = aioprocessing.AioPool
         self.inst = self.Obj(1)
         self.initargs = (1,)
-        self.meth = 'coro_map'
-        self.args = (map_func, [1, 2, 3],)
+        self.meth = "coro_map"
+        self.args = (map_func, [1, 2, 3])
 
 
 class PoolTest(BaseTest):

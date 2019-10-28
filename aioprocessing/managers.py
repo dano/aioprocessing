@@ -1,20 +1,43 @@
 import asyncio
 from multiprocessing.util import register_after_fork
 from queue import Queue
-from threading import (Barrier, BoundedSemaphore, Condition, Event,
-                       Lock, RLock, Semaphore)
-from multiprocessing.managers import (SyncManager, MakeProxyType,
-                                      BarrierProxy, EventProxy, ConditionProxy,
-                                      AcquirerProxy)
+from threading import (
+    Barrier,
+    BoundedSemaphore,
+    Condition,
+    Event,
+    Lock,
+    RLock,
+    Semaphore,
+)
+from multiprocessing.managers import (
+    SyncManager,
+    MakeProxyType,
+    BarrierProxy,
+    EventProxy,
+    ConditionProxy,
+    AcquirerProxy,
+)
 
 from aioprocessing.locks import _ContextManager
 from .executor import _ExecutorMixin
 
 
-AioBaseQueueProxy = MakeProxyType('AioQueueProxy', (
-    'task_done', 'get', 'qsize', 'put', 'put_nowait',
-    'get_nowait', 'empty', 'join', '_qsize', 'full'
-    ))
+AioBaseQueueProxy = MakeProxyType(
+    "AioQueueProxy",
+    (
+        "task_done",
+        "get",
+        "qsize",
+        "put",
+        "put_nowait",
+        "get_nowait",
+        "empty",
+        "join",
+        "_qsize",
+        "full",
+    ),
+)
 
 
 class _AioProxyMixin(_ExecutorMixin):
@@ -22,14 +45,17 @@ class _AioProxyMixin(_ExecutorMixin):
 
     def _async_call(self, method, *args, loop=None, **kwargs):
         return asyncio.ensure_future(
-            self.run_in_executor(self._callmethod, method,
-                                 args, kwargs, loop=loop))
+            self.run_in_executor(
+                self._callmethod, method, args, kwargs, loop=loop
+            )
+        )
 
 
 class ProxyCoroBuilder(type):
     """ Build coroutines to proxy functions. """
+
     def __new__(cls, clsname, bases, dct):
-        coro_list = dct.get('coroutines', [])
+        coro_list = dct.get("coroutines", [])
         existing_coros = set()
 
         def find_existing_coros(d):
@@ -43,13 +69,13 @@ class ProxyCoroBuilder(type):
         find_existing_coros(dct)
         for b in bases:
             b_dct = b.__dict__
-            coro_list.extend(b_dct.get('coroutines', []))
+            coro_list.extend(b_dct.get("coroutines", []))
             find_existing_coros(b_dct)
 
         bases += (_AioProxyMixin,)
 
         for func in coro_list:
-            coro_name = 'coro_{}'.format(func)
+            coro_name = "coro_{}".format(func)
             if coro_name not in existing_coros:
                 dct[coro_name] = cls.coro_maker(func)
         return super().__new__(cls, clsname, bases, dct)
@@ -57,8 +83,8 @@ class ProxyCoroBuilder(type):
     @staticmethod
     def coro_maker(func):
         def coro_func(self, *args, loop=None, **kwargs):
-            return self._async_call(func, *args, loop=loop,
-                                    **kwargs)
+            return self._async_call(func, *args, loop=loop, **kwargs)
+
         return coro_func
 
 
@@ -69,12 +95,13 @@ class AioQueueProxy(AioBaseQueueProxy, metaclass=ProxyCoroBuilder):
     proxy.
 
     """
-    coroutines = ['get', 'put']
+
+    coroutines = ["get", "put"]
 
 
 class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
     pool_workers = 1
-    coroutines = ['acquire', 'release']
+    coroutines = ["acquire", "release"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -82,6 +109,7 @@ class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
 
         def _after_fork(obj):
             obj._threaded_acquire = False
+
         register_after_fork(self, _after_fork)
 
     def coro_acquire(self, *args, **kwargs):
@@ -94,16 +122,18 @@ class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
         or in the Executor thread.
 
         """
+
         def lock_acquired(fut):
             if fut.result():
                 self._threaded_acquire = True
+
         out = self.run_in_executor(self.acquire, *args, **kwargs)
         out.add_done_callback(lock_acquired)
         return out
 
     def __getstate__(self):
         state = super().__getstate__()
-        state['_threaded_acquire'] = False
+        state["_threaded_acquire"] = False
         return state
 
     def __setstate__(self, state):
@@ -139,26 +169,28 @@ class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
 
 
 class AioBarrierProxy(BarrierProxy, metaclass=ProxyCoroBuilder):
-    coroutines = ['wait']
+    coroutines = ["wait"]
 
 
 class AioEventProxy(EventProxy, metaclass=ProxyCoroBuilder):
-    coroutines = ['wait']
+    coroutines = ["wait"]
 
 
 class AioConditionProxy(ConditionProxy, metaclass=ProxyCoroBuilder):
-    coroutines = ['wait', 'wait_for']
+    coroutines = ["wait", "wait_for"]
 
 
 class AioSyncManager(SyncManager):
     """ A mp.Manager that provides asyncio-friendly objects. """
+
     pass
 
 
 AioSyncManager.register("AioQueue", Queue, AioQueueProxy)
 AioSyncManager.register("AioBarrier", Barrier, AioQueueProxy)
-AioSyncManager.register("AioBoundedSemaphore", BoundedSemaphore,
-                        AioAcquirerProxy)
+AioSyncManager.register(
+    "AioBoundedSemaphore", BoundedSemaphore, AioAcquirerProxy
+)
 AioSyncManager.register("AioCondition", Condition, AioConditionProxy)
 AioSyncManager.register("AioEvent", Event, AioQueueProxy)
 AioSyncManager.register("AioLock", Lock, AioAcquirerProxy)

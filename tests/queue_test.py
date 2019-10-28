@@ -22,7 +22,7 @@ class GenQueueMixin(_GenMixin):
     def setUp(self):
         super().setUp()
         self.inst = self.Obj()
-        self.meth = 'coro_get'
+        self.meth = "coro_get"
 
     def _after(self):
         self.inst.put(1)
@@ -110,6 +110,7 @@ class ManagerQueueTest(BaseTest):
 
         def submit():
             yield p.submit(queue_put, q, val)
+
         next(submit())
 
         @asyncio.coroutine

@@ -18,7 +18,7 @@ class GenAioProcessTest(BaseTest, _GenMixin):
     def setUp(self):
         self.Obj = aioprocessing.AioProcess
         self.inst = self.Obj(target=dummy)
-        self.meth = 'coro_join'
+        self.meth = "coro_join"
 
 
 class ProcessTest(BaseTest):
