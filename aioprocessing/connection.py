@@ -1,16 +1,27 @@
 from concurrent.futures import ThreadPoolExecutor
-from multiprocessing.connection import (Listener, Client, deliver_challenge,
-                                        answer_challenge, wait)
+from multiprocessing.connection import (
+    Listener,
+    Client,
+    deliver_challenge,
+    answer_challenge,
+    wait,
+)
 
 from .executor import CoroBuilder
 from .util import run_in_executor
 
-__all__ = ['AioConnection']
+__all__ = ["AioConnection"]
 
 
 class AioConnection(metaclass=CoroBuilder):
-    coroutines = ['recv', 'poll', 'send_bytes', 'recv_bytes',
-                  'recv_bytes_into', 'send']
+    coroutines = [
+        "recv",
+        "poll",
+        "send_bytes",
+        "recv_bytes",
+        "recv_bytes_into",
+        "send",
+    ]
 
     def __init__(self, obj):
         """ Initialize the AioConnection.
@@ -37,7 +48,7 @@ def AioClient(*args, **kwargs):
 
 class AioListener(metaclass=CoroBuilder):
     delegate = Listener
-    coroutines = ['accept']
+    coroutines = ["accept"]
 
     def accept(self):
         conn = self._obj.accept()

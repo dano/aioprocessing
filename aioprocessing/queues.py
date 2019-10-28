@@ -4,7 +4,7 @@ from .executor import CoroBuilder
 
 
 class AioBaseQueue(metaclass=CoroBuilder):
-    coroutines = ['get', 'put']
+    coroutines = ["get", "put"]
 
 
 class AioSimpleQueue(AioBaseQueue):
@@ -14,6 +14,7 @@ class AioSimpleQueue(AioBaseQueue):
     which are asynchronous version of get and put, respectively.
 
     """
+
     delegate = SimpleQueue
 
 
@@ -24,6 +25,7 @@ class AioQueue(AioBaseQueue):
     which are asynchronous version of get and put, respectively.
 
     """
+
     delegate = Queue
 
 
@@ -35,5 +37,6 @@ class AioJoinableQueue(AioBaseQueue):
     join, respectively.
 
     """
-    coroutines = ['join']
+
+    coroutines = ["join"]
     delegate = JoinableQueue

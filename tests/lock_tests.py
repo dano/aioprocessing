@@ -6,11 +6,14 @@ import unittest
 import traceback
 import aioprocessing
 from multiprocessing import Process, Event, Queue, get_all_start_methods
+
 try:
     from multiprocessing import get_context
 except ImportError:
+
     def get_context(param):
         pass
+
 
 from ._base_test import BaseTest, _GenMixin
 
@@ -51,7 +54,7 @@ class GenAioLockTest(BaseTest, _GenMixin):
         super().setUp()
         self.Obj = aioprocessing.AioLock
         self.inst = self.Obj()
-        self.meth = 'coro_acquire'
+        self.meth = "coro_acquire"
 
 
 class GenAioManagerLockTest(GenAioLockTest):
@@ -61,9 +64,11 @@ class GenAioManagerLockTest(GenAioLockTest):
         self.Obj = self.manager.AioLock
         self.inst = self.Obj()
 
-    @unittest.skipIf(not hasattr(multiprocessing, 'get_context'),
-                     "No get_context method")
-    def test_ctx(self): pass
+    @unittest.skipIf(
+        not hasattr(multiprocessing, "get_context"), "No get_context method"
+    )
+    def test_ctx(self):
+        pass
 
 
 class GenAioRLockTest(BaseTest, _GenMixin):
@@ -71,7 +76,7 @@ class GenAioRLockTest(BaseTest, _GenMixin):
         super().setUp()
         self.Obj = aioprocessing.AioRLock
         self.inst = self.Obj()
-        self.meth = 'coro_acquire'
+        self.meth = "coro_acquire"
 
 
 class GenAioConditionTest(BaseTest, _GenMixin):
@@ -79,7 +84,7 @@ class GenAioConditionTest(BaseTest, _GenMixin):
         super().setUp()
         self.Obj = aioprocessing.AioCondition
         self.inst = self.Obj()
-        self.meth = 'coro_acquire'
+        self.meth = "coro_acquire"
 
 
 class GenAioSemaphoreTest(BaseTest, _GenMixin):
@@ -87,7 +92,7 @@ class GenAioSemaphoreTest(BaseTest, _GenMixin):
         super().setUp()
         self.Obj = aioprocessing.AioSemaphore
         self.inst = self.Obj()
-        self.meth = 'coro_acquire'
+        self.meth = "coro_acquire"
 
 
 class GenAioEventTest(BaseTest, _GenMixin):
@@ -95,7 +100,7 @@ class GenAioEventTest(BaseTest, _GenMixin):
         super().setUp()
         self.Obj = aioprocessing.AioEvent
         self.inst = self.Obj()
-        self.meth = 'coro_wait'
+        self.meth = "coro_wait"
 
     def _after(self):
         self.inst.set()
@@ -107,7 +112,7 @@ class GenAioBarrierTest(BaseTest, _GenMixin):
         self.Obj = aioprocessing.AioBarrier
         self.inst = self.Obj(1)
         self.initargs = (1,)
-        self.meth = 'coro_wait'
+        self.meth = "coro_wait"
 
 
 class LoopLockTest(BaseTest):
@@ -168,8 +173,9 @@ class LockTest(BaseTest):
         @asyncio.coroutine
         def do_async_lock():
             self.assertEqual(False, (yield from self.lock.coro_acquire(False)))
-            self.assertEqual(True,
-                             (yield from self.lock.coro_acquire(timeout=4)))
+            self.assertEqual(
+                True, (yield from self.lock.coro_acquire(timeout=4))
+            )
 
         p = Process(target=do_lock_acquire, args=(self.lock, e))
         p.start()
@@ -252,6 +258,7 @@ class LockMixingTest(BaseTest):
         @asyncio.coroutine
         def do_acquire():
             yield from self.lock.coro_acquire()
+
         q = Queue()
         p = Process(target=mix_release, args=(self.lock, q))
         self.loop.run_until_complete(do_acquire())
@@ -265,15 +272,16 @@ class LockMixingTest(BaseTest):
 class SpawnLockMixingTest(LockMixingTest):
     def setUp(self):
         super().setUp()
-        context = get_context('spawn')
+        context = get_context("spawn")
         self.lock = aioprocessing.AioLock(context=context)
 
 
-if 'forkserver' in get_all_start_methods():
+if "forkserver" in get_all_start_methods():
+
     class ForkServerLockMixingTest(LockMixingTest):
         def setUp(self):
             super().setUp()
-            context = get_context('forkserver')
+            context = get_context("forkserver")
             self.lock = aioprocessing.AioLock(context=context)
 
 
@@ -290,6 +298,7 @@ class SemaphoreTest(BaseTest):
         @asyncio.coroutine
         def sem_acquire():
             self.assertEqual(True, (yield from sem.coro_acquire()))
+
         self.loop.run_until_complete(sem_acquire())
         self.assertReturnsIfImplemented(0, get_value, sem)
         self.assertEqual(False, sem.acquire(False))
@@ -340,7 +349,7 @@ class BarrierTest(BaseTest):
         def wait_barrier():
             nonlocal fut
             fut = asyncio.ensure_future(wait_barrier_async())
-            yield from asyncio.sleep(.5)
+            yield from asyncio.sleep(0.5)
             self.assertEqual(1, self.barrier.n_waiting)
             self.barrier.wait()
 
@@ -357,9 +366,10 @@ class BarrierTest(BaseTest):
         @asyncio.coroutine
         def wait_barrier():
             event.wait()
-            yield from asyncio.sleep(.2)
+            yield from asyncio.sleep(0.2)
             self.assertEqual(1, self.barrier.n_waiting)
             yield from self.barrier.coro_wait()
+
         self.loop.run_until_complete(wait_barrier())
         p.join()
 

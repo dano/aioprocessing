@@ -1,12 +1,26 @@
 import asyncio
 
 from .executor import CoroBuilder
-from multiprocessing import (Event, Lock, RLock, BoundedSemaphore,
-                             Condition, Semaphore, Barrier)
+from multiprocessing import (
+    Event,
+    Lock,
+    RLock,
+    BoundedSemaphore,
+    Condition,
+    Semaphore,
+    Barrier,
+)
 from multiprocessing.util import register_after_fork
 
-__all__ = ["AioLock", "AioRLock", "AioBarrier", "AioCondition", "AioEvent",
-           "AioSemaphore", "AioBoundedSemaphore"]
+__all__ = [
+    "AioLock",
+    "AioRLock",
+    "AioBarrier",
+    "AioCondition",
+    "AioEvent",
+    "AioSemaphore",
+    "AioBoundedSemaphore",
+]
 
 
 class _ContextManager:
@@ -37,13 +51,14 @@ class _ContextManager:
 
 class AioBaseLock(metaclass=CoroBuilder):
     pool_workers = 1
-    coroutines = ['acquire', 'release']
+    coroutines = ["acquire", "release"]
 
     def __init__(self, *args, **kwargs):
         self._threaded_acquire = False
 
         def _after_fork(obj):
             obj._threaded_acquire = False
+
         register_after_fork(self, _after_fork)
 
     def coro_acquire(self, *args, **kwargs):
@@ -56,6 +71,7 @@ class AioBaseLock(metaclass=CoroBuilder):
         or in the Executor thread.
 
         """
+
         def lock_acquired(fut):
             if fut.result():
                 self._threaded_acquire = True
@@ -66,7 +82,7 @@ class AioBaseLock(metaclass=CoroBuilder):
 
     def __getstate__(self):
         state = super().__getstate__()
-        state['_threaded_acquire'] = False
+        state["_threaded_acquire"] = False
         return state
 
     def __setstate__(self, state):
@@ -109,7 +125,7 @@ class AioBaseLock(metaclass=CoroBuilder):
 
 class AioBaseWaiter(metaclass=CoroBuilder):
     pool_workers = 1
-    coroutines = ['wait']
+    coroutines = ["wait"]
 
 
 class AioBarrier(AioBaseWaiter):
@@ -120,7 +136,7 @@ class AioBarrier(AioBaseWaiter):
 class AioCondition(AioBaseLock, AioBaseWaiter):
     delegate = Condition
     pool_workers = 1
-    coroutines = ['wait_for', 'notify', 'notify_all']
+    coroutines = ["wait_for", "notify", "notify_all"]
 
 
 class AioEvent(AioBaseWaiter):
