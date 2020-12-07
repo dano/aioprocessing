@@ -10,7 +10,7 @@ class AioBaseQueue(metaclass=CoroBuilder):
 class AioSimpleQueue(AioBaseQueue):
     """ An asyncio-friendly version of mp.SimpleQueue.
 
-    Provides two asyncio.coroutines: coro_get and coro_put,
+    Provides two coroutines: coro_get and coro_put,
     which are asynchronous version of get and put, respectively.
 
     """
@@ -21,7 +21,7 @@ class AioSimpleQueue(AioBaseQueue):
 class AioQueue(AioBaseQueue):
     """ An asyncio-friendly version of mp.SimpleQueue.
 
-    Provides two asyncio.coroutines: coro_get and coro_put,
+    Provides two coroutines: coro_get and coro_put,
     which are asynchronous version of get and put, respectively.
 
     """
@@ -32,7 +32,7 @@ class AioQueue(AioBaseQueue):
 class AioJoinableQueue(AioBaseQueue):
     """ An asyncio-friendly version of mp.JoinableQueue.
 
-    Provides three asyncio.coroutines: coro_get, coro_put, and
+    Provides three coroutines: coro_get, coro_put, and
     coro_join, which are asynchronous version of get put, and
     join, respectively.
 

@@ -1,4 +1,3 @@
-import asyncio
 import aioprocessing
 
 from ._base_test import BaseTest, _GenMixin
@@ -43,9 +42,8 @@ class PoolTest(BaseTest):
         self.assertRaises(ValueError, pool.map, map_func, [1])
 
     def test_coro_apply(self):
-        @asyncio.coroutine
-        def do_apply():
-            out = yield from self.pool.coro_apply(work_func, args=(2, 3))
+        async def do_apply():
+            out = await self.pool.coro_apply(work_func, args=(2, 3))
             self.assertEqual(out, 6)
 
         self.loop.run_until_complete(do_apply())
@@ -53,9 +51,8 @@ class PoolTest(BaseTest):
     def test_coro_map(self):
         it = list(range(5))
 
-        @asyncio.coroutine
-        def do_map():
-            out = yield from self.pool.coro_map(map_func, it)
+        async def do_map():
+            out = await self.pool.coro_map(map_func, it)
             self.assertEqual(out, list(map(map_func, it)))
 
         self.loop.run_until_complete(do_map())
@@ -63,17 +60,15 @@ class PoolTest(BaseTest):
     def test_coro_starmap(self):
         it = list(zip(range(5), range(5, 10)))
 
-        @asyncio.coroutine
-        def do_starmap():
-            out = yield from self.pool.coro_starmap(work_func, it)
+        async def do_starmap():
+            out = await self.pool.coro_starmap(work_func, it)
             self.assertEqual(out, list(starmap(work_func, it)))
 
         self.loop.run_until_complete(do_starmap())
 
     def test_coro_join(self):
-        @asyncio.coroutine
-        def do_join():
-            yield from self.pool.coro_join()
+        async def do_join():
+            await self.pool.coro_join()
 
         self.pool.close()
         self.loop.run_until_complete(do_join())

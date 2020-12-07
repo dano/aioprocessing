@@ -39,7 +39,7 @@ except ImportError:
 
 from unittest.signals import installHandler
 
-assert sys.version >= '3.3', 'Please use Python 3.3 or higher.'
+assert sys.version >= '3.5', 'Please use Python 3.5 or higher.'
 
 ARGS = argparse.ArgumentParser(description="Run all unittests.")
 ARGS.add_argument(

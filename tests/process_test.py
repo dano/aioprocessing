@@ -1,4 +1,3 @@
-import asyncio
 import unittest
 import multiprocessing
 
@@ -28,9 +27,8 @@ class ProcessTest(BaseTest):
         p = aioprocessing.AioProcess(target=f, args=(q,) + t)
         p.start()
 
-        @asyncio.coroutine
-        def join():
-            yield from p.coro_join()
+        async def join():
+            await p.coro_join()
 
         self.loop.run_until_complete(join())
         self.assertEqual(q.get(), t)

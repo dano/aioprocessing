@@ -1,5 +1,3 @@
-import asyncio
-
 from .executor import CoroBuilder
 from multiprocessing import (
     Event,
@@ -29,7 +27,7 @@ class _ContextManager:
     This enables the following idiom for acquiring and releasing a
     lock around a block:
 
-        with (yield from lock):
+        async with lock:
             <block>
 
     """
@@ -103,13 +101,11 @@ class AioBaseLock(metaclass=CoroBuilder):
         self._threaded_acquire = False
         return out
 
-    @asyncio.coroutine
-    def __aenter__(self):
-        yield from self.coro_acquire()
+    async def __aenter__(self):
+        await self.coro_acquire()
         return None
 
-    @asyncio.coroutine
-    def __aexit__(self, *args, **kwargs):
+    async def __aexit__(self, *args, **kwargs):
         self.release()
 
     def __enter__(self):
@@ -118,8 +114,8 @@ class AioBaseLock(metaclass=CoroBuilder):
     def __exit__(self, *args, **kwargs):
         return self._obj.__exit__(*args, **kwargs)
 
-    def __iter__(self):
-        yield from self.coro_acquire()
+    async def __aiter__(self):
+        await self.coro_acquire()
         return _ContextManager(self)
 
 

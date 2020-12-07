@@ -154,13 +154,11 @@ class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
         self._threaded_acquire = False
         return out
 
-    @asyncio.coroutine
-    def __aenter__(self):
-        yield from self.coro_acquire()
+    async def __aenter__(self):
+        await self.coro_acquire()
         return None
 
-    @asyncio.coroutine
-    def __aexit__(self, *args, **kwargs):
+    async def __aexit__(self, *args, **kwargs):
         self.release()
 
     def __iter__(self):

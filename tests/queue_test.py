@@ -1,4 +1,3 @@
-import asyncio
 import unittest
 import aioprocessing
 from multiprocessing import Process, Event
@@ -50,9 +49,8 @@ class QueueTest(BaseTest):
     def test_blocking_put(self):
         q = aioprocessing.AioQueue()
 
-        @asyncio.coroutine
-        def queue_put():
-            yield from q.coro_put(1)
+        async def queue_put():
+            await q.coro_put(1)
 
         self.loop.run_until_complete(queue_put())
         self.assertEqual(q.get(), 1)
@@ -62,9 +60,8 @@ class QueueTest(BaseTest):
         val = 1
         p = Process(target=queue_put, args=(q, val))
 
-        @asyncio.coroutine
-        def queue_get():
-            ret = yield from q.coro_get()
+        async def queue_get():
+            ret = await q.coro_get()
             self.assertEqual(ret, val)
 
         p.start()
@@ -76,9 +73,8 @@ class QueueTest(BaseTest):
         e = Event()
         val = 2
 
-        @asyncio.coroutine
-        def queue_put():
-            yield from q.coro_put(val)
+        async def queue_put():
+            await q.coro_put(val)
 
         p = Process(target=queue_get, args=(q, e))
         p.start()
@@ -92,9 +88,8 @@ class QueueTest(BaseTest):
         q = aioprocessing.AioSimpleQueue()
         val = 8
 
-        @asyncio.coroutine
-        def queue_put():
-            yield from q.coro_put(val)
+        async def queue_put():
+            await q.coro_put(val)
 
         self.loop.run_until_complete(queue_put())
         out = q.get()
@@ -113,11 +108,10 @@ class ManagerQueueTest(BaseTest):
 
         next(submit())
 
-        @asyncio.coroutine
-        def queue_get():
-            out = yield from q.coro_get()
+        async def queue_get():
+            out = await q.coro_get()
             self.assertEqual(out, val)
-            yield from q.coro_put(5)
+            await q.coro_put(5)
 
         self.loop.run_until_complete(queue_get())
         returned = q.get()
@@ -129,9 +123,8 @@ class JoinableQueueTest(BaseTest):
     def test_join_empty_queue(self):
         q = aioprocessing.AioJoinableQueue()
 
-        @asyncio.coroutine
-        def join():
-            yield from q.coro_join()
+        async def join():
+            await q.coro_join()
 
         self.loop.run_until_complete(join())
 

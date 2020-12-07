@@ -84,8 +84,7 @@ class CoroBuilder(type):
     1) Make _ExecutorMixin a parent of the given class
     2) For every function name listed in the class attribute "coroutines",
        add a new instance method to the class called "coro_<func_name>",
-       which is an asyncio.coroutine that calls func_name in a
-       ThreadPoolExecutor.
+       which is a coroutine that calls func_name in a ThreadPoolExecutor.
 
     Each wrapper class that uses this metaclass can define three class
     attributes that will influence the behavior of the metaclass:

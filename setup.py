@@ -11,7 +11,7 @@ setup(
     author="Dan O'Reilly",
     author_email="oreilldf@gmail.com",
     description=(
-        "A Python 3.3+ library that integrates "
+        "A Python 3.5+ library that integrates "
         "the multiprocessing module with asyncio."
     ),
     zip_safe=False,
@@ -30,10 +30,12 @@ setup(
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
 )

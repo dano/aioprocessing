@@ -123,9 +123,8 @@ class LoopLockTest(BaseTest):
         loop = asyncio.new_event_loop()
         lock = aioprocessing.AioLock()
 
-        @asyncio.coroutine
-        def do_async_lock():
-            yield from lock.coro_acquire(loop=loop)
+        async def do_async_lock():
+            await lock.coro_acquire(loop=loop)
 
         loop.run_until_complete(do_async_lock())
 
@@ -142,9 +141,8 @@ class LockTest(BaseTest):
         self.assertEqual(None, self.lock.release())
 
     def test_lock_async(self):
-        @asyncio.coroutine
-        def do_async_lock():
-            self.assertEqual(True, (yield from self.lock.coro_acquire()))
+        async def do_async_lock():
+            self.assertEqual(True, (await self.lock.coro_acquire()))
             self.assertEqual(None, self.lock.release())
 
         self.loop.run_until_complete(do_async_lock())
@@ -154,11 +152,10 @@ class LockTest(BaseTest):
         event2 = Event()
         q = Queue()
 
-        @asyncio.coroutine
-        def with_lock():
-            with (yield from self.lock):
+        async def with_lock():
+            async with self.lock:
                 event2.set()
-                asyncio.sleep(1)
+                await asyncio.sleep(1)
                 event.wait()
 
         p = Process(target=sync_lock, args=(self.lock, event, event2, q))
@@ -170,11 +167,10 @@ class LockTest(BaseTest):
     def test_lock_multiproc(self):
         e = Event()
 
-        @asyncio.coroutine
-        def do_async_lock():
-            self.assertEqual(False, (yield from self.lock.coro_acquire(False)))
+        async def do_async_lock():
+            self.assertEqual(False, (await self.lock.coro_acquire(False)))
             self.assertEqual(
-                True, (yield from self.lock.coro_acquire(timeout=4))
+                True, (await self.lock.coro_acquire(timeout=4))
             )
 
         p = Process(target=do_lock_acquire, args=(self.lock, e))
@@ -246,18 +242,16 @@ class LockMixingTest(BaseTest):
         self.lock.release()
 
     def test_mix_async_to_sync(self):
-        @asyncio.coroutine
-        def do_acquire():
-            yield from self.lock.coro_acquire()
+        async def do_acquire():
+            await self.lock.coro_acquire()
 
         self.loop.run_until_complete(do_acquire())
 
         self.lock.release()
 
     def test_mix_with_procs(self):
-        @asyncio.coroutine
-        def do_acquire():
-            yield from self.lock.coro_acquire()
+        async def do_acquire():
+            await self.lock.coro_acquire()
 
         q = Queue()
         p = Process(target=mix_release, args=(self.lock, q))
@@ -295,9 +289,8 @@ class SemaphoreTest(BaseTest):
         self.assertEqual(True, sem.acquire())
         self.assertReturnsIfImplemented(1, get_value, sem)
 
-        @asyncio.coroutine
-        def sem_acquire():
-            self.assertEqual(True, (yield from sem.coro_acquire()))
+        async def sem_acquire():
+            self.assertEqual(True, (await sem.coro_acquire()))
 
         self.loop.run_until_complete(sem_acquire())
         self.assertReturnsIfImplemented(0, get_value, sem)
@@ -342,14 +335,13 @@ class BarrierTest(BaseTest):
     def test_barrier(self):
         fut = None
 
-        @asyncio.coroutine
-        def wait_barrier_async():
-            yield from self.barrier.coro_wait()
+        async def wait_barrier_async():
+            await self.barrier.coro_wait()
 
-        def wait_barrier():
+        async def wait_barrier():
             nonlocal fut
             fut = asyncio.ensure_future(wait_barrier_async())
-            yield from asyncio.sleep(0.5)
+            await asyncio.sleep(0.5)
             self.assertEqual(1, self.barrier.n_waiting)
             self.barrier.wait()
 
@@ -363,12 +355,11 @@ class BarrierTest(BaseTest):
         p = Process(target=barrier_wait, args=(self.barrier, event))
         p.start()
 
-        @asyncio.coroutine
-        def wait_barrier():
+        async def wait_barrier():
             event.wait()
-            yield from asyncio.sleep(0.2)
+            await asyncio.sleep(0.2)
             self.assertEqual(1, self.barrier.n_waiting)
-            yield from self.barrier.coro_wait()
+            await self.barrier.coro_wait()
 
         self.loop.run_until_complete(wait_barrier())
         p.join()
@@ -386,9 +377,8 @@ class EventTest(BaseTest):
     def test_event(self):
         p = Process(target=set_event, args=(self.event,))
 
-        @asyncio.coroutine
-        def wait_event():
-            yield from self.event.coro_wait()
+        async def wait_event():
+            await self.event.coro_wait()
 
         p.start()
         self.loop.run_until_complete(wait_event())
@@ -414,10 +404,9 @@ class ConditionTest(BaseTest):
         def pred():
             return event.is_set()
 
-        @asyncio.coroutine
-        def wait_for_pred():
-            yield from self.cond.coro_acquire()
-            yield from self.cond.coro_wait_for(pred)
+        async def wait_for_pred():
+            await self.cond.coro_acquire()
+            await self.cond.coro_wait_for(pred)
             self.cond.release()
 
         p = Process(target=cond_notify, args=(self.cond, event))
