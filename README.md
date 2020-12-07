@@ -124,3 +124,12 @@ What versions of Python are compatible?
 ---------------------------------------
 
 `aioprocessing` will work out of the box on Python 3.5+.
+
+Gotchas
+-------
+Keep in mind that, while the API exposes coroutines for interacting with
+`multiprocessing` APIs, internally they are almost always being delegated
+to a `ThreadPoolExecutor`, this means the caveats that apply with using
+`ThreadPoolExecutor` with `asyncio` apply: namely, you won't be able to
+cancel any of the coroutines, because the work being done in the worker
+thread can't be interrupted.

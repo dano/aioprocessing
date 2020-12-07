@@ -27,8 +27,8 @@ __all__ = [
 # is zero for an official release, positive for a development branch,
 # or negative for a release candidate or beta (after the base version
 # number has been incremented)
-version = "1.1.0"
-version_info = (1, 1, 0, 1)
+version = "1.1.1"
+version_info = (1, 1, 1, 0)
 
 if hasattr(multiprocessing, "get_context"):
 
