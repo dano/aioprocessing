@@ -1,6 +1,6 @@
 aioprocessing
 =============
-[![Build Status](https://travis-ci.org/dano/aioprocessing.svg?branch=master)](https://travis-ci.org/dano/aioprocessing)
+[![Build Status](https://github.com/dano/aioprocessing/workflows/aioprocessing%20tests/badge.svg?branch=master)](https://github.com/dano/aioprocessing/actions)
 
 
 `aioprocessing` provides asynchronous, [`asyncio`](https://docs.python.org/3/library/asyncio.html) compatible, coroutine 

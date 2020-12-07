@@ -1,0 +1,22 @@
+name: aioprocessing tests
+on:
+    pull_request: null
+    push:
+        branches:
+            - master
+jobs:
+    tests:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix: 
+                python: ['3.5', '3.6', '3.7', '3.8', '3.9']
+        name: aioprocessing ${{ matrix.python }} tests
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-python@v2
+              with:
+                  python-version: ${{ matrix.python }}
+            - name: Install Flake8
+              run: pip install flake8
+            - run: flake8 .
+            - run: python runtests.py
