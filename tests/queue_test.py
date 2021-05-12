@@ -1,8 +1,8 @@
 import unittest
-import aioprocessing
-from multiprocessing import Process, Event
 from concurrent.futures import ProcessPoolExecutor
 
+import aioprocessing
+from aioprocessing.mp import Process, Event, util
 from ._base_test import BaseTest, _GenMixin
 
 
@@ -97,6 +97,11 @@ class QueueTest(BaseTest):
 
 
 class ManagerQueueTest(BaseTest):
+    @unittest.skipIf(
+        "multiprocess.util" in str(util),
+        "concurrent.futures is not yet supported by uqfoundation "
+        "(https://github.com/uqfoundation/pathos/issues/90)"
+    )
     def test_executor(self):
         m = aioprocessing.AioManager()
         q = m.AioQueue()

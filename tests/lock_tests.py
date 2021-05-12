@@ -1,14 +1,15 @@
-import multiprocessing
 import sys
 import time
 import asyncio
 import unittest
 import traceback
+
 import aioprocessing
-from multiprocessing import Process, Event, Queue, get_all_start_methods
+import aioprocessing.mp as multiprocessing
+from aioprocessing.mp import Process, Event, Queue, get_all_start_methods
 
 try:
-    from multiprocessing import get_context
+    from aioprocessing.mp import get_context
 except ImportError:
 
     def get_context(param):
