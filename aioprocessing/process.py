@@ -1,6 +1,5 @@
-from multiprocessing import Process
-
 from .executor import CoroBuilder
+from .mp import Process
 
 __all__ = ["AioProcess"]
 

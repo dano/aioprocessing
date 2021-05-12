@@ -1,5 +1,4 @@
-import multiprocessing
-
+from . import mp as multiprocessing  # noqa
 from .connection import *  # noqa
 from .managers import *  # noqa
 
@@ -27,8 +26,8 @@ __all__ = [
 # is zero for an official release, positive for a development branch,
 # or negative for a release candidate or beta (after the base version
 # number has been incremented)
-version = "1.1.1"
-version_info = (1, 1, 1, 0)
+version = "1.2.0"
+version_info = (1, 2, 0, 0)
 
 if hasattr(multiprocessing, "get_context"):
 

@@ -5,7 +5,7 @@ aioprocessing
 
 `aioprocessing` provides asynchronous, [`asyncio`](https://docs.python.org/3/library/asyncio.html) compatible, coroutine 
 versions of many blocking instance methods on objects in the [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html) 
-library. Here's an example demonstrating the `aioprocessing` versions of 
+library. To use [`dill`](https://pypi.org/project/dill) for universal pickling, install using `pip install aioprocessing[dill]`. Here's an example demonstrating the `aioprocessing` versions of 
 `Event`, `Queue`, and `Lock`:
 
 ```python

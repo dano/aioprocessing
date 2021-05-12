@@ -16,6 +16,7 @@ setup(
     ),
     zip_safe=False,
     license="BSD",
+    extras_require={"dill": ["multiprocess"]},
     keywords="asyncio multiprocessing coroutine",
     url="https://github.com/dano/aioprocessing",
     long_description=readme,
