@@ -1,5 +1,5 @@
 import unittest
-import multiprocessing
+import aioprocessing.mp as multiprocessing
 
 import aioprocessing
 from ._base_test import BaseTest, _GenMixin

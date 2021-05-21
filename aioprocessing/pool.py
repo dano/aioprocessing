@@ -1,8 +1,8 @@
-from multiprocessing import Pool
 from asyncio import Future
 import asyncio
 
 from .executor import CoroBuilder
+from .mp import Pool
 
 __all__ = ["AioPool"]
 

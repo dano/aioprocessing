@@ -8,7 +8,7 @@ jobs:
     tests:
         runs-on: ubuntu-latest
         strategy:
-            matrix: 
+            matrix:
                 python: ['3.5', '3.6', '3.7', '3.8', '3.9']
         name: aioprocessing ${{ matrix.python }} tests
         steps:
@@ -19,4 +19,9 @@ jobs:
             - name: Install Flake8
               run: pip install flake8
             - run: flake8 .
-            - run: python runtests.py
+            - run: python runtests.py -v --failfast
+              timeout-minutes: 1
+            # tests should also pass when using multiprocess (dill)
+            - run: pip install multiprocess
+            - run: python runtests.py -v --failfast
+              timeout-minutes: 1

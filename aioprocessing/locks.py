@@ -1,5 +1,5 @@
 from .executor import CoroBuilder
-from multiprocessing import (
+from .mp import (
     Event,
     Lock,
     RLock,
@@ -7,8 +7,8 @@ from multiprocessing import (
     Condition,
     Semaphore,
     Barrier,
+    util as _util,
 )
-from multiprocessing.util import register_after_fork
 
 __all__ = [
     "AioLock",
@@ -57,7 +57,7 @@ class AioBaseLock(metaclass=CoroBuilder):
         def _after_fork(obj):
             obj._threaded_acquire = False
 
-        register_after_fork(self, _after_fork)
+        _util.register_after_fork(self, _after_fork)
 
     def coro_acquire(self, *args, **kwargs):
         """ Non-blocking acquire.

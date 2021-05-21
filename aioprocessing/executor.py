@@ -1,8 +1,8 @@
-from multiprocessing import cpu_count
 from functools import wraps
 from concurrent.futures import ThreadPoolExecutor
 
 from . import util
+from .mp import cpu_count
 
 
 def init_executor(func):

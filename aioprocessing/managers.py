@@ -10,20 +10,13 @@ from threading import (
     RLock,
     Semaphore,
 )
-from multiprocessing.managers import (
-    SyncManager,
-    MakeProxyType,
-    BarrierProxy,
-    EventProxy,
-    ConditionProxy,
-    AcquirerProxy,
-)
 
 from aioprocessing.locks import _ContextManager
 from .executor import _ExecutorMixin
+from .mp import managers as _managers
 
 
-AioBaseQueueProxy = MakeProxyType(
+AioBaseQueueProxy = _managers.MakeProxyType(
     "AioQueueProxy",
     (
         "task_done",
@@ -99,7 +92,7 @@ class AioQueueProxy(AioBaseQueueProxy, metaclass=ProxyCoroBuilder):
     coroutines = ["get", "put"]
 
 
-class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
+class AioAcquirerProxy(_managers.AcquirerProxy, metaclass=ProxyCoroBuilder):
     pool_workers = 1
     coroutines = ["acquire", "release"]
 
@@ -166,19 +159,19 @@ class AioAcquirerProxy(AcquirerProxy, metaclass=ProxyCoroBuilder):
         return _ContextManager(self)
 
 
-class AioBarrierProxy(BarrierProxy, metaclass=ProxyCoroBuilder):
+class AioBarrierProxy(_managers.BarrierProxy, metaclass=ProxyCoroBuilder):
     coroutines = ["wait"]
 
 
-class AioEventProxy(EventProxy, metaclass=ProxyCoroBuilder):
+class AioEventProxy(_managers.EventProxy, metaclass=ProxyCoroBuilder):
     coroutines = ["wait"]
 
 
-class AioConditionProxy(ConditionProxy, metaclass=ProxyCoroBuilder):
+class AioConditionProxy(_managers.ConditionProxy, metaclass=ProxyCoroBuilder):
     coroutines = ["wait", "wait_for"]
 
 
-class AioSyncManager(SyncManager):
+class AioSyncManager(_managers.SyncManager):
     """ A mp.Manager that provides asyncio-friendly objects. """
 
     pass

@@ -1,6 +1,7 @@
 import asyncio
 import unittest
-import multiprocessing
+
+import aioprocessing.mp as multiprocessing
 
 
 class BaseTest(unittest.TestCase):

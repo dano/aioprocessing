@@ -1,6 +1,5 @@
-from multiprocessing import Queue, SimpleQueue, JoinableQueue
-
 from .executor import CoroBuilder
+from .mp import Queue, SimpleQueue, JoinableQueue
 
 
 class AioBaseQueue(metaclass=CoroBuilder):

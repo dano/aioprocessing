@@ -1,10 +1,10 @@
 import unittest
-import multiprocessing
-from multiprocessing import Process
 from array import array
 
 import aioprocessing
+import aioprocessing.mp as multiprocessing
 from aioprocessing.connection import AioConnection, AioListener, AioClient
+from aioprocessing.mp import Process
 
 from ._base_test import BaseTest
 
