@@ -1,10 +1,7 @@
 import asyncio
 from multiprocessing.util import register_after_fork
 from queue import Queue
-
-from aioprocessing.locks import _ContextManager
-from .executor import _ExecutorMixin
-from .mp import (
+from threading import (
     Barrier,
     BoundedSemaphore,
     Condition,
@@ -12,8 +9,11 @@ from .mp import (
     Lock,
     RLock,
     Semaphore,
-    managers as _managers,
 )
+
+from aioprocessing.locks import _ContextManager
+from .executor import _ExecutorMixin
+from .mp import managers as _managers
 
 
 AioBaseQueueProxy = _managers.MakeProxyType(

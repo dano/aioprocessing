@@ -66,6 +66,14 @@ seamlessly used inside of `asyncio` coroutines, without ever blocking
 the event loop.
 
 
+What's new
+----------
+
+`v2.0.0`
+
+- Add support for universal pickling using [`dill`](https://github.com/uqfoundation/dill), installable with `pip install aioprocessing[dill]`. The library will now attempt to import [`multiprocess`](https://github.com/uqfoundation/multiprocess), falling back to stdlib `multiprocessing`. Force stdlib behaviour by setting a non-empty environment variable `AIOPROCESSING_DILL_DISABLED=1`. This can be used to avoid [errors](https://github.com/dano/aioprocessing/pull/36#discussion_r631178933) when attempting to combine `aioprocessing[dill]` with stdlib `multiprocessing` based objects like `concurrent.futures.ProcessPoolExecutor`.
+
+
 How does it work?
 -----------------
 
