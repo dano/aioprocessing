@@ -20,8 +20,8 @@ jobs:
               run: pip install flake8
             - run: flake8 .
             - run: python runtests.py -v --failfast
-              timeout-minutes: 1
+              timeout-minutes: 2
             # tests should also pass when using multiprocess (dill)
             - run: pip install multiprocess
             - run: python runtests.py -v --failfast
-              timeout-minutes: 1
+              timeout-minutes: 2
