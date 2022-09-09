@@ -178,12 +178,12 @@ class AioSyncManager(_managers.SyncManager):
 
 
 AioSyncManager.register("AioQueue", Queue, AioQueueProxy)
-AioSyncManager.register("AioBarrier", Barrier, AioQueueProxy)
+AioSyncManager.register("AioBarrier", Barrier, AioBarrierProxy)
 AioSyncManager.register(
     "AioBoundedSemaphore", BoundedSemaphore, AioAcquirerProxy
 )
 AioSyncManager.register("AioCondition", Condition, AioConditionProxy)
-AioSyncManager.register("AioEvent", Event, AioQueueProxy)
+AioSyncManager.register("AioEvent", Event, AioEventProxy)
 AioSyncManager.register("AioLock", Lock, AioAcquirerProxy)
 AioSyncManager.register("AioRLock", RLock, AioAcquirerProxy)
 AioSyncManager.register("AioSemaphore", Semaphore, AioAcquirerProxy)
