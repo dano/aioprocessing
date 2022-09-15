@@ -11,7 +11,7 @@ from threading import (
     Semaphore,
 )
 
-from aioprocessing.locks import _ContextManager
+from .locks import _ContextManager
 from .executor import _ExecutorMixin
 from .mp import managers as _managers
 

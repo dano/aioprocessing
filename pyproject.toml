@@ -1,0 +1,37 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "aioprocessing"
+authors = [{name = "Dan O'Reilly", email = "oreilldf@gmail.com"}]
+readme = "README.md"
+description = "A Python 3.5+ library that integrates the multiprocessing module with asyncio."
+dynamic = ["version"]
+license = { file="LICENSE.txt" }
+keywords = ["asyncio", "multiprocessing", "coroutine"]
+requires-python = ">=3.5"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.5",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.optional-dependencies]
+dill = ["multiprocess"]
+
+[project.urls]
+Home = "https://github.com/dano/aioprocessing"

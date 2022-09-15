@@ -68,6 +68,8 @@ the event loop.
 
 What's new
 ----------
+`v2.0.1`
+- Fixed a bug that kept the `AioBarrier` and `AioEvent` proxies returned from `AioManager` instances from working. Thanks to Giorgos Apostolopoulos for the fix.
 
 `v2.0.0`
 
