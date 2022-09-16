@@ -28,6 +28,7 @@ def listener_sendback(event, address, authkey):
     inval = conn.recv()
     conn.send_bytes(array("i", [inval, inval + 1, inval + 2, inval + 3]))
     conn.close()
+    listener.close()
 
 
 class PipeTest(BaseTest):

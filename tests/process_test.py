@@ -15,8 +15,10 @@ def dummy():
 
 class GenAioProcessTest(BaseTest, _GenMixin):
     def setUp(self):
+        super().setUp()
         self.Obj = aioprocessing.AioProcess
         self.inst = self.Obj(target=dummy)
+        self.inst.start()
         self.meth = "coro_join"
 
 

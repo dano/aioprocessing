@@ -25,6 +25,10 @@ class GenAioPoolTest(BaseTest, _GenMixin):
         self.meth = "coro_map"
         self.args = (map_func, [1, 2, 3])
 
+    def tearDown(self):
+        super().tearDown()
+        self.inst.close()
+
 
 class PoolTest(BaseTest):
     def setUp(self):

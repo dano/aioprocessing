@@ -20,7 +20,7 @@ class AioPool(metaclass=CoroBuilder):
         """
         if not loop:
             loop = asyncio.get_event_loop()
-        fut = Future()
+        fut = Future(loop=loop)
 
         def set_result(result):
             loop.call_soon_threadsafe(fut.set_result, result)

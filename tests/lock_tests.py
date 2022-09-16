@@ -120,6 +120,9 @@ class LoopLockTest(BaseTest):
     def setUp(self):
         pass
 
+    def tearDown(self):
+        pass
+
     def test_lock_with_loop(self):
         loop = asyncio.new_event_loop()
         lock = aioprocessing.AioLock()
@@ -128,6 +131,7 @@ class LoopLockTest(BaseTest):
             await lock.coro_acquire(loop=loop)
 
         loop.run_until_complete(do_async_lock())
+        loop.close()
 
 
 class LockTest(BaseTest):
